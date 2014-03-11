@@ -1,6 +1,9 @@
 package au.com.addstar.triggerit;
 
-import org.bukkit.entity.Player;
+import java.util.ArrayList;
+import java.util.Map;
+
+import org.apache.commons.lang.Validate;
 
 /**
  * Represents a trigger object.<br/>
@@ -22,6 +25,7 @@ import org.bukkit.entity.Player;
 public abstract class Trigger
 {
 	private boolean mIsEnabled = true;
+	private ArrayList<Action> mActions = new ArrayList<Action>();
 	
 	public abstract boolean isValid();
 	
@@ -35,9 +39,28 @@ public abstract class Trigger
 		mIsEnabled = enabled;
 	}
 	
-	public void trigger(Player player, Object... arguments)
+	public final void addAction(Action action)
 	{
-		System.out.println("Trigger triggered by " + player);
+		mActions.add(action);
+	}
+	
+	public final void clearActions(Action action)
+	{
+		mActions.clear();
+	}
+	
+	/**
+	 * Trigger this trigger with the supplied arguments
+	 * 
+	 * @param arguments The map of arguments used in this. Cannot be null, can be empty
+	 */
+	public final void trigger(Map<String, Object> arguments)
+	{
+		Validate.notNull(arguments);
+		for(Action action : mActions)
+		{
+			action.execute(arguments);
+		}
 	}
 	
 	/**

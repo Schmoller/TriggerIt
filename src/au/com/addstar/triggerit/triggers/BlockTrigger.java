@@ -26,6 +26,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.util.BlockVector;
 
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableMap;
 
 import au.com.addstar.triggerit.Trigger;
 import au.com.addstar.triggerit.TriggerItPlugin;
@@ -244,7 +245,7 @@ public class BlockTrigger extends Trigger
 					continue;
 				
 				if(trigger.getType() == TriggerType.Place || trigger.getType() == TriggerType.Change)
-					trigger.trigger(event.getPlayer());
+					trigger.trigger(new ImmutableMap.Builder<String, Object>().put("player", event.getPlayer()).build());
 			}
 		}
 		
@@ -259,7 +260,13 @@ public class BlockTrigger extends Trigger
 					continue;
 				
 				if(trigger.getType() == TriggerType.Remove || trigger.getType() == TriggerType.Change)
-					trigger.trigger(event.getPlayer());
+				{
+					trigger.trigger(new ImmutableMap.Builder<String, Object>()
+						.put("player", event.getPlayer())
+						.put("block", event.getBlock())
+						.put("location", event.getBlock().getLocation())
+						.build());
+				}
 			}
 		}
 		
@@ -274,7 +281,12 @@ public class BlockTrigger extends Trigger
 					continue;
 				
 				if(trigger.getType() == TriggerType.BlockUpdate)
-					trigger.trigger(null);
+				{
+					trigger.trigger(new ImmutableMap.Builder<String, Object>()
+						.put("block", event.getBlock())
+						.put("location", event.getBlock().getLocation())
+						.build());
+				}
 			}
 		}
 		
@@ -291,12 +303,16 @@ public class BlockTrigger extends Trigger
 				if(!trigger.isEnabled())
 					continue;
 				
-				if((trigger.getType() == TriggerType.LeftClick || trigger.getType() == TriggerType.Click) && event.getAction() == Action.LEFT_CLICK_BLOCK)
-					trigger.trigger(event.getPlayer());
-				else if((trigger.getType() == TriggerType.RightClick || trigger.getType() == TriggerType.Click) && event.getAction() == Action.RIGHT_CLICK_BLOCK)
-					trigger.trigger(event.getPlayer());
-				else if(trigger.getType() == TriggerType.Physical && event.getAction() == Action.PHYSICAL)
-					trigger.trigger(event.getPlayer());
+				if(((trigger.getType() == TriggerType.LeftClick || trigger.getType() == TriggerType.Click) && event.getAction() == Action.LEFT_CLICK_BLOCK) ||
+				   ((trigger.getType() == TriggerType.RightClick || trigger.getType() == TriggerType.Click) && event.getAction() == Action.RIGHT_CLICK_BLOCK) ||
+				   (trigger.getType() == TriggerType.Physical && event.getAction() == Action.PHYSICAL))
+				{
+					trigger.trigger(new ImmutableMap.Builder<String, Object>()
+						.put("player", event.getPlayer())
+						.put("block", event.getClickedBlock())
+						.put("location", event.getClickedBlock().getLocation())
+						.build());
+				}
 			}
 		}
 		

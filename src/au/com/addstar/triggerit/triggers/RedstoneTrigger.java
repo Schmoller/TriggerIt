@@ -24,6 +24,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.util.BlockVector;
 
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableMap;
 
 import au.com.addstar.triggerit.Trigger;
 import au.com.addstar.triggerit.TriggerItPlugin;
@@ -246,12 +247,24 @@ public class RedstoneTrigger extends Trigger
 				if(trigger.isOnHigh())
 				{
 					if(event.getNewCurrent() >= trigger.getThreshold() && event.getOldCurrent() < trigger.getThreshold())
-						trigger.trigger(null);
+					{
+						trigger.trigger(new ImmutableMap.Builder<String, Object>()
+							.put("block", event.getBlock())
+							.put("location", event.getBlock().getLocation())
+							.put("level", event.getNewCurrent())
+							.build());
+					}
 				}
 				else
 				{
 					if(event.getNewCurrent() <= trigger.getThreshold() && event.getOldCurrent() > trigger.getThreshold())
-						trigger.trigger(null);
+					{
+						trigger.trigger(new ImmutableMap.Builder<String, Object>()
+							.put("block", event.getBlock())
+							.put("location", event.getBlock().getLocation())
+							.put("level", event.getNewCurrent())
+							.build());
+					}
 				}
 			}
 		}
