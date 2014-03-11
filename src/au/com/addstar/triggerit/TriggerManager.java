@@ -11,6 +11,8 @@ import java.util.List;
 import org.apache.commons.lang.Validate;
 import org.bukkit.command.CommandSender;
 
+import au.com.addstar.triggerit.commands.BadArgumentException;
+
 
 public class TriggerManager
 {
@@ -72,7 +74,7 @@ public class TriggerManager
 		}
 		
 		
-		public Trigger newTrigger(CommandSender sender, String[] args) throws IllegalArgumentException, IllegalStateException
+		public Trigger newTrigger(CommandSender sender, String[] args) throws IllegalArgumentException, IllegalStateException, BadArgumentException
 		{
 			try
 			{

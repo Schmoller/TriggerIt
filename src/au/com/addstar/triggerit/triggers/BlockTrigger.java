@@ -29,6 +29,7 @@ import com.google.common.collect.HashMultimap;
 
 import au.com.addstar.triggerit.Trigger;
 import au.com.addstar.triggerit.TriggerItPlugin;
+import au.com.addstar.triggerit.commands.BadArgumentException;
 
 public class BlockTrigger extends Trigger
 {
@@ -193,17 +194,17 @@ public class BlockTrigger extends Trigger
 		removeTriggerAt(mWorld, mLocation, this);
 	}
 	
-	public static BlockTrigger newTrigger(CommandSender sender, String[] args) throws IllegalArgumentException, IllegalStateException
+	public static BlockTrigger newTrigger(CommandSender sender, String[] args) throws IllegalArgumentException, IllegalStateException, BadArgumentException
 	{
 		if(!(sender instanceof Player))
-			throw new IllegalStateException("Block is only usable by players.");
+			throw new IllegalArgumentException("Block is only usable by players.");
 		
 		if(args.length != 1)
 			throw new IllegalStateException("<type>");
 
 		TriggerType type = mTriggerTypeMap.get(args[0].toLowerCase());
 		if(type == null)
-			throw new IllegalArgumentException("Unknown block trigger type " + args[0]);
+			throw new BadArgumentException(0, "Unknown block trigger type");
 		
 		BlockTrigger trigger = new BlockTrigger();
 		trigger.setType(type);
