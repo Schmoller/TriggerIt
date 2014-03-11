@@ -6,12 +6,15 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.UUID;
 
 import org.apache.commons.lang.Validate;
 import org.bukkit.command.CommandSender;
 
 import com.google.common.base.Throwables;
+import com.google.common.collect.HashMultimap;
 
 import au.com.addstar.triggerit.commands.BadArgumentException;
 
@@ -49,9 +52,16 @@ public class TriggerManager
 		return mDefinitions.get(type.toLowerCase());
 	}
 	
+	private HashMultimap<UUID, Trigger> mAllTriggers = HashMultimap.create();
+
 	public void addTrigger(Trigger trigger)
 	{
-		
+		if(trigger.isValid())
+		{
+			// TODO: Way to get world for those that have it
+			mAllTriggers.put(null, trigger);
+			trigger.onLoad();
+		}
 	}
 	
 	/**
@@ -61,7 +71,8 @@ public class TriggerManager
 	 */
 	public void completeTrigger(Trigger trigger)
 	{
-		
+		Validate.isTrue(trigger.isValid(), "Trigger is not valid!");
+		addTrigger(trigger);
 	}
 	
 	public static class TriggerDefinition

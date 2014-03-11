@@ -21,7 +21,7 @@ import org.bukkit.entity.Player;
  */
 public abstract class Trigger
 {
-	private boolean mIsEnabled = false;
+	private boolean mIsEnabled = true;
 	
 	public abstract boolean isValid();
 	
