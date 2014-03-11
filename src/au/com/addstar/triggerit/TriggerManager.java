@@ -1,28 +1,42 @@
 package au.com.addstar.triggerit;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 
 import org.apache.commons.lang.Validate;
+import org.bukkit.command.CommandSender;
 
 
 public class TriggerManager
 {
-	private HashMap<String, Constructor<? extends Trigger>> mTriggers = new HashMap<String, Constructor<? extends Trigger>>();
+	private HashMap<String, TriggerDefinition> mDefinitions = new HashMap<String, TriggerDefinition>();
+	private ArrayList<String> mTypeNames = new ArrayList<String>();
 	
-	public void registerTriggerType(String type, Class<? extends Trigger> typeClass)
+	public void registerTriggerType(String type, Class<? extends Trigger> typeClass) throws IllegalArgumentException
 	{
 		Validate.notNull(typeClass);
 		Validate.notNull(type);
 		
-		try
-		{
-			mTriggers.put(type, typeClass.getConstructor());
-		}
-		catch(NoSuchMethodException e)
-		{
-			throw new IllegalArgumentException("Cannot use " + typeClass.getName() + " as trigger class. Does not provide a default constructor!");
-		}
+		if(mDefinitions.containsKey(type.toLowerCase()))
+			throw new IllegalArgumentException("Duplicate type name found");
+		
+		mDefinitions.put(type.toLowerCase(), new TriggerDefinition(typeClass));
+		mTypeNames.add(type);
+	}
+	
+	public List<String> getTypeNames()
+	{
+		return Collections.unmodifiableList(mTypeNames);
+	}
+	
+	public TriggerDefinition getType(String type)
+	{
+		return mDefinitions.get(type.toLowerCase());
 	}
 	
 	/**
@@ -33,5 +47,90 @@ public class TriggerManager
 	public void completeTrigger(Trigger trigger)
 	{
 		
+	}
+	
+	public static class TriggerDefinition
+	{
+		private Constructor<? extends Trigger> mBlankConstructor;
+		private Method mNewTriggerMethod;
+		private Method mTabCompleteMethod;
+		private Method mInitializeMethod;
+		
+		public TriggerDefinition(Class<? extends Trigger> triggerClass) throws IllegalArgumentException
+		{
+			try
+			{
+				mBlankConstructor = triggerClass.getConstructor();
+				mNewTriggerMethod = triggerClass.getMethod("newTrigger", CommandSender.class, String[].class);
+				mTabCompleteMethod = triggerClass.getMethod("tabComplete", CommandSender.class, String[].class);
+				mInitializeMethod = triggerClass.getMethod("initializeType");
+			}
+			catch(NoSuchMethodException e)
+			{
+				throw new IllegalArgumentException("Missing a required method", e);
+			}
+		}
+		
+		
+		public Trigger newTrigger(CommandSender sender, String[] args) throws IllegalArgumentException, IllegalStateException
+		{
+			try
+			{
+				return (Trigger)mNewTriggerMethod.invoke(null, sender, args);
+			}
+			catch ( IllegalAccessException e )
+			{
+				throw new RuntimeException(e);
+			}
+			catch ( InvocationTargetException e )
+			{
+				throw new RuntimeException(e);
+			}
+		}
+		
+		public Trigger newBlankTrigger()
+		{
+			try
+			{
+				return mBlankConstructor.newInstance();
+			}
+			catch ( Exception e )
+			{
+				throw new RuntimeException(e);
+			}
+		}
+		
+		@SuppressWarnings( "unchecked" )
+		public List<String> tabComplete(CommandSender sender, String[] args)
+		{
+			try
+			{
+				return (List<String>)mTabCompleteMethod.invoke(null, sender, args);
+			}
+			catch ( IllegalAccessException e )
+			{
+				throw new RuntimeException(e);
+			}
+			catch ( InvocationTargetException e )
+			{
+				throw new RuntimeException(e);
+			}
+		}
+		
+		public void initialize()
+		{
+			try
+			{
+				mInitializeMethod.invoke(null);
+			}
+			catch ( IllegalAccessException e )
+			{
+				throw new RuntimeException(e);
+			}
+			catch ( InvocationTargetException e )
+			{
+				throw new RuntimeException(e);
+			}
+		}
 	}
 }
