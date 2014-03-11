@@ -38,8 +38,10 @@ public class BlockTrigger extends Trigger
 	{
 		Remove,
 		Place,
+		Change,
 		LeftClick,
 		RightClick,
+		Click,
 		Physical,
 		BlockUpdate
 	}
@@ -241,7 +243,7 @@ public class BlockTrigger extends Trigger
 				if(!trigger.isEnabled())
 					continue;
 				
-				if(trigger.getType() == TriggerType.Place)
+				if(trigger.getType() == TriggerType.Place || trigger.getType() == TriggerType.Change)
 					trigger.trigger(event.getPlayer());
 			}
 		}
@@ -256,7 +258,7 @@ public class BlockTrigger extends Trigger
 				if(!trigger.isEnabled())
 					continue;
 				
-				if(trigger.getType() == TriggerType.Remove)
+				if(trigger.getType() == TriggerType.Remove || trigger.getType() == TriggerType.Change)
 					trigger.trigger(event.getPlayer());
 			}
 		}
@@ -289,9 +291,9 @@ public class BlockTrigger extends Trigger
 				if(!trigger.isEnabled())
 					continue;
 				
-				if(trigger.getType() == TriggerType.LeftClick && event.getAction() == Action.LEFT_CLICK_BLOCK)
+				if((trigger.getType() == TriggerType.LeftClick || trigger.getType() == TriggerType.Click) && event.getAction() == Action.LEFT_CLICK_BLOCK)
 					trigger.trigger(event.getPlayer());
-				else if(trigger.getType() == TriggerType.RightClick && event.getAction() == Action.RIGHT_CLICK_BLOCK)
+				else if((trigger.getType() == TriggerType.RightClick || trigger.getType() == TriggerType.Click) && event.getAction() == Action.RIGHT_CLICK_BLOCK)
 					trigger.trigger(event.getPlayer());
 				else if(trigger.getType() == TriggerType.Physical && event.getAction() == Action.PHYSICAL)
 					trigger.trigger(event.getPlayer());
