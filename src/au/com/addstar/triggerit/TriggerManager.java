@@ -6,7 +6,6 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
@@ -17,7 +16,6 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.HashMultimap;
 
 import au.com.addstar.triggerit.commands.BadArgumentException;
-
 
 public class TriggerManager
 {
