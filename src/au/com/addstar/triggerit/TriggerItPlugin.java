@@ -28,15 +28,17 @@ public class TriggerItPlugin extends JavaPlugin
 		
 		registerTriggers();
 		registerCommands();
+		
+		mTriggers.initializeAll(this);
 	}
 	
 	private void registerTriggers()
 	{
-		mTriggers.registerTriggerType("Region", RegionTrigger.class);
+		//mTriggers.registerTriggerType("Region", RegionTrigger.class);
 		mTriggers.registerTriggerType("Block", BlockTrigger.class);
-		mTriggers.registerTriggerType("ChatCommand", ChatCommandTrigger.class);
-		mTriggers.registerTriggerType("Login", LoginTrigger.class);
-		mTriggers.registerTriggerType("Redstone", RedstoneTrigger.class);
+//		mTriggers.registerTriggerType("ChatCommand", ChatCommandTrigger.class);
+//		mTriggers.registerTriggerType("Login", LoginTrigger.class);
+//		mTriggers.registerTriggerType("Redstone", RedstoneTrigger.class);
 	}
 	
 	private void registerCommands()

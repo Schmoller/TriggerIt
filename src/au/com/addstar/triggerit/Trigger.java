@@ -37,7 +37,7 @@ public abstract class Trigger
 	
 	public void trigger(Player player, Object... arguments)
 	{
-		
+		System.out.println("Trigger triggered by " + player);
 	}
 	
 	/**

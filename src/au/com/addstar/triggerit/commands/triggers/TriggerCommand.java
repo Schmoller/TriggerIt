@@ -7,5 +7,7 @@ public class TriggerCommand extends RootCommandDispatcher
 	public TriggerCommand()
 	{
 		super("Allows you to manage triggers");
+		
+		registerCommand(new NewTriggerCommand());
 	}
 }

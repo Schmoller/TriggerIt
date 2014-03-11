@@ -11,6 +11,8 @@ import java.util.List;
 import org.apache.commons.lang.Validate;
 import org.bukkit.command.CommandSender;
 
+import com.google.common.base.Throwables;
+
 import au.com.addstar.triggerit.commands.BadArgumentException;
 
 
@@ -29,6 +31,12 @@ public class TriggerManager
 		
 		mDefinitions.put(type.toLowerCase(), new TriggerDefinition(typeClass));
 		mTypeNames.add(type);
+	}
+	
+	public void initializeAll(TriggerItPlugin plugin)
+	{
+		for(TriggerDefinition def : mDefinitions.values())
+			def.initialize(plugin);
 	}
 	
 	public List<String> getTypeNames()
@@ -70,7 +78,7 @@ public class TriggerManager
 				mBlankConstructor = triggerClass.getConstructor();
 				mNewTriggerMethod = triggerClass.getMethod("newTrigger", CommandSender.class, String[].class);
 				mTabCompleteMethod = triggerClass.getMethod("tabComplete", CommandSender.class, String[].class);
-				mInitializeMethod = triggerClass.getMethod("initializeType");
+				mInitializeMethod = triggerClass.getMethod("initializeType", TriggerItPlugin.class);
 			}
 			catch(NoSuchMethodException e)
 			{
@@ -91,7 +99,8 @@ public class TriggerManager
 			}
 			catch ( InvocationTargetException e )
 			{
-				throw new RuntimeException(e);
+				Throwables.propagateIfPossible(e.getCause());
+				throw new RuntimeException(e.getCause());
 			}
 		}
 		
@@ -120,15 +129,16 @@ public class TriggerManager
 			}
 			catch ( InvocationTargetException e )
 			{
-				throw new RuntimeException(e);
+				Throwables.propagateIfPossible(e.getCause());
+				throw new RuntimeException(e.getCause());
 			}
 		}
 		
-		public void initialize()
+		public void initialize(TriggerItPlugin plugin)
 		{
 			try
 			{
-				mInitializeMethod.invoke(null);
+				mInitializeMethod.invoke(null, plugin);
 			}
 			catch ( IllegalAccessException e )
 			{
@@ -136,7 +146,8 @@ public class TriggerManager
 			}
 			catch ( InvocationTargetException e )
 			{
-				throw new RuntimeException(e);
+				Throwables.propagateIfPossible(e.getCause());
+				throw new RuntimeException(e.getCause());
 			}
 		}
 	}

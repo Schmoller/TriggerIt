@@ -63,7 +63,7 @@ public class BlockTrigger extends Trigger
 	}
 	
 	// Order: World, X, Z, Y
-	private static HashMap<UUID, HashMap<Integer, HashMap<Integer, HashMultimap<Integer, BlockTrigger>>>> mBlockTriggers;
+	private static HashMap<UUID, HashMap<Integer, HashMap<Integer, HashMultimap<Integer, BlockTrigger>>>> mBlockTriggers = new HashMap<UUID, HashMap<Integer,HashMap<Integer,HashMultimap<Integer,BlockTrigger>>>>();
 	
 	public static Set<BlockTrigger> getTriggersAt(Block block)
 	{
