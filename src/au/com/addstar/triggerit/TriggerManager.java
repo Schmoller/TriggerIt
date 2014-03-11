@@ -41,6 +41,11 @@ public class TriggerManager
 		return mDefinitions.get(type.toLowerCase());
 	}
 	
+	public void addTrigger(Trigger trigger)
+	{
+		
+	}
+	
 	/**
 	 * Some triggers need extra information for example the BlockTrigger needs a block clicked to finish it.
 	 * This method is to be called once all needed information is filled out

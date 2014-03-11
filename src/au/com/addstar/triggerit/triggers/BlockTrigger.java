@@ -29,6 +29,7 @@ import com.google.common.collect.HashMultimap;
 
 import au.com.addstar.triggerit.Trigger;
 import au.com.addstar.triggerit.TriggerItPlugin;
+import au.com.addstar.triggerit.Utilities;
 import au.com.addstar.triggerit.commands.BadArgumentException;
 
 public class BlockTrigger extends Trigger
@@ -217,6 +218,9 @@ public class BlockTrigger extends Trigger
 	
 	public static List<String> tabComplete(CommandSender sender, String[] args)
 	{
+		if(args.length == 1)
+			return Utilities.matchString(args[0], mTriggerTypeNames);
+		
 		return null;
 	}
 	

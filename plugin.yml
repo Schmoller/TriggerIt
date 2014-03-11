@@ -2,3 +2,16 @@ name: TriggerIt
 version: ${pom.version}
 
 main: au.com.addstar.triggerit.TriggerItPlugin
+
+permission:
+  triggerit.command.trigger:
+    default: op
+  triggerit.command.trigger.new:
+    default: op
+    children:
+      triggerit.command.trigger: true
+
+commands:
+  trigger:
+    aliases: [triggers]
+    permission: triggerit.command.trigger

@@ -6,7 +6,7 @@ import java.util.List;
 
 public class Utilities
 {
-	public List<String> matchString(String str, Collection<String> possibilities)
+	public static List<String> matchString(String str, Collection<String> possibilities)
 	{
 		ArrayList<String> matches = new ArrayList<String>();
 		str = str.toLowerCase();

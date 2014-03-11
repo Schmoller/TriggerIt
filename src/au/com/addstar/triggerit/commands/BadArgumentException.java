@@ -27,6 +27,10 @@ public class BadArgumentException extends RuntimeException
 	{
 		return mArg;
 	}
+	public void setArgument(int argument)
+	{
+		mArg = argument;
+	}
 	
 	public BadArgumentException addInfo(String line)
 	{

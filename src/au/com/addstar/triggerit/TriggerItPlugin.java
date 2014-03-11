@@ -2,6 +2,7 @@ package au.com.addstar.triggerit;
 
 import org.bukkit.plugin.java.JavaPlugin;
 
+import au.com.addstar.triggerit.commands.triggers.TriggerCommand;
 import au.com.addstar.triggerit.triggers.*;
 
 public class TriggerItPlugin extends JavaPlugin
@@ -26,6 +27,7 @@ public class TriggerItPlugin extends JavaPlugin
 		mTriggers = new TriggerManager();
 		
 		registerTriggers();
+		registerCommands();
 	}
 	
 	private void registerTriggers()
@@ -35,5 +37,11 @@ public class TriggerItPlugin extends JavaPlugin
 		mTriggers.registerTriggerType("ChatCommand", ChatCommandTrigger.class);
 		mTriggers.registerTriggerType("Login", LoginTrigger.class);
 		mTriggers.registerTriggerType("Redstone", RedstoneTrigger.class);
+	}
+	
+	private void registerCommands()
+	{
+		TriggerCommand trigger = new TriggerCommand();
+		trigger.registerAs(getCommand("trigger"));
 	}
 }
