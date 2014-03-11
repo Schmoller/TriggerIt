@@ -1,5 +1,7 @@
 package au.com.addstar.triggerit;
 
+import org.bukkit.entity.Player;
+
 /**
  * Represents a trigger object.<br/>
  * Each trigger should have the following 3 static methods:<br/>
@@ -17,10 +19,24 @@ package au.com.addstar.triggerit;
  * 
  * initializeType should handle setting up needed listeners for the trigger
  */
-public interface Trigger
+public abstract class Trigger
 {
-	public boolean isValid();
+	private boolean mIsEnabled = false;
 	
-	public boolean isEnabled();
-	public void setEnabled(boolean enabled);
+	public abstract boolean isValid();
+	
+	public boolean isEnabled()
+	{
+		return mIsEnabled;
+	}
+	
+	public void setEnabled(boolean enabled)
+	{
+		mIsEnabled = enabled;
+	}
+	
+	public void trigger(Player player, Object... arguments)
+	{
+		
+	}
 }
