@@ -1,0 +1,4 @@
+name: TriggerIt
+version: ${pom.version}
+
+main: au.com.addstar.triggerit.TriggerItPlugin
