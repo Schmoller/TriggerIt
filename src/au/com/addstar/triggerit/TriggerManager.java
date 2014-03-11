@@ -24,4 +24,14 @@ public class TriggerManager
 			throw new IllegalArgumentException("Cannot use " + typeClass.getName() + " as trigger class. Does not provide a default constructor!");
 		}
 	}
+	
+	/**
+	 * Some triggers need extra information for example the BlockTrigger needs a block clicked to finish it.
+	 * This method is to be called once all needed information is filled out
+	 * @param trigger The trigger to complete
+	 */
+	public void completeTrigger(Trigger trigger)
+	{
+		
+	}
 }

@@ -7,10 +7,22 @@ import au.com.addstar.triggerit.triggers.*;
 public class TriggerItPlugin extends JavaPlugin
 {
 	private TriggerManager mTriggers;
+	private static TriggerItPlugin mInstance;
+	
+	public static TriggerItPlugin getInstance()
+	{
+		return mInstance;
+	}
+	
+	public TriggerManager getTriggerManager()
+	{
+		return mTriggers;
+	}
 	
 	@Override
 	public void onEnable()
 	{
+		mInstance = this;
 		mTriggers = new TriggerManager();
 		
 		registerTriggers();

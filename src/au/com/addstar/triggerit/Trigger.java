@@ -39,4 +39,11 @@ public abstract class Trigger
 	{
 		
 	}
+	
+	/**
+	 * Called upon creation or loading
+	 */
+	public void onLoad() {}
+	public void onUnload() {}
+	
 }
