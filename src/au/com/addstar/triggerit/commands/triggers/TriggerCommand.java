@@ -1,6 +1,7 @@
 package au.com.addstar.triggerit.commands.triggers;
 
 import au.com.addstar.triggerit.commands.RootCommandDispatcher;
+import au.com.addstar.triggerit.commands.actions.ActionCommand;
 
 public class TriggerCommand extends RootCommandDispatcher
 {
@@ -9,5 +10,6 @@ public class TriggerCommand extends RootCommandDispatcher
 		super("Allows you to manage triggers");
 		
 		registerCommand(new NewTriggerCommand());
+		registerCommand(new ActionCommand());
 	}
 }

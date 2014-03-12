@@ -1,5 +1,6 @@
 package au.com.addstar.triggerit.actions;
 
+import java.util.List;
 import java.util.Map;
 
 import org.bukkit.Bukkit;
@@ -11,6 +12,7 @@ import org.bukkit.entity.Player;
 import au.com.addstar.triggerit.Action;
 import au.com.addstar.triggerit.TriggerItPlugin;
 import au.com.addstar.triggerit.Utilities;
+import au.com.addstar.triggerit.commands.BadArgumentException;
 
 public class CommandAction implements Action
 {
@@ -54,6 +56,30 @@ public class CommandAction implements Action
 			return String.format("%d %d %d", ((Location) argument).getX(), ((Location) argument).getY(), ((Location) argument).getZ());
 		
 		return argument.toString();
+	}
+	
+	public static CommandAction newAction(CommandSender sender, String[] args) throws IllegalArgumentException, IllegalStateException, BadArgumentException
+	{
+		if(args.length < 2)
+			throw new IllegalStateException("<sender> <command>");
+		
+		CommandAction action = new CommandAction();
+		action.mExecutor = args[0];
+		
+		action.mCommand = "";
+		for(int i = 1; i < args.length; ++i)
+		{
+			if(!action.mCommand.isEmpty())
+				action.mCommand += " ";
+			action.mCommand += args[i];
+		}
+		
+		return action;
+	}
+	
+	public static List<String> tabComplete(CommandSender sender, String[] args)
+	{
+		return null;
 	}
 
 }
