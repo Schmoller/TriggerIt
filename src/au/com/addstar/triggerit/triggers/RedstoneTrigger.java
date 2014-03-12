@@ -187,6 +187,19 @@ public class RedstoneTrigger extends Trigger
 		removeTriggerAt(mWorld, mLocation, this);
 	}
 	
+	@Override
+	public String toString()
+	{
+		if(!isValid())
+			return "Redstone trigger (incomplete)";
+
+		World world = Bukkit.getWorld(mWorld);
+		if(mOnHigh)
+			return String.format("Redstone trigger @(%d,%d,%d,%s) on >= %d", mLocation.getBlockX(), mLocation.getBlockY(), mLocation.getBlockZ(), (world != null ? world.getName() : "Unloaded"), mThreshold); 
+		else
+			return String.format("Redstone trigger @(%d,%d,%d,%s) on <= %d", mLocation.getBlockX(), mLocation.getBlockY(), mLocation.getBlockZ(), (world != null ? world.getName() : "Unloaded"), mThreshold);
+	}
+	
 	public static RedstoneTrigger newTrigger(CommandSender sender, String name, String[] args) throws IllegalArgumentException, IllegalStateException, BadArgumentException
 	{
 		if(!(sender instanceof Player))

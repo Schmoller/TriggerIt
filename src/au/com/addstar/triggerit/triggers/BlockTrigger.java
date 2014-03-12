@@ -204,6 +204,16 @@ public class BlockTrigger extends Trigger
 		removeTriggerAt(mWorld, mLocation, this);
 	}
 	
+	@Override
+	public String toString()
+	{
+		if(!isValid())
+			return "Block trigger (incomplete)";
+
+		World world = Bukkit.getWorld(mWorld);
+		return String.format("Block trigger @(%d,%d,%d,%s) for %s", mLocation.getBlockX(), mLocation.getBlockY(), mLocation.getBlockZ(), (world != null ? world.getName() : "Unloaded"), mType.name()); 
+	}
+	
 	public static BlockTrigger newTrigger(CommandSender sender, String name, String[] args) throws IllegalArgumentException, IllegalStateException, BadArgumentException
 	{
 		if(!(sender instanceof Player))
