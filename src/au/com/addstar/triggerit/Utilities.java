@@ -33,7 +33,7 @@ public class Utilities
 		while(match.find())
 		{
 			Object obj = arguments.get(match.group(1));
-			if(action != null)
+			if(action != null && obj != null)
 				obj = action.resolveArgument(obj);
 			
 			match.appendReplacement(buffer, (obj != null ? obj.toString() : match.group(0)));

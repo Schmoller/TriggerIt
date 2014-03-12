@@ -57,7 +57,7 @@ public abstract class Trigger
 		mActions.add(action);
 	}
 	
-	public final void clearActions(Action action)
+	public final void clearActions()
 	{
 		mActions.clear();
 	}

@@ -5,24 +5,19 @@ import java.util.List;
 
 import org.bukkit.command.CommandSender;
 
+import au.com.addstar.triggerit.Trigger;
+import au.com.addstar.triggerit.TriggerItPlugin;
+import au.com.addstar.triggerit.TriggerManager;
 import au.com.addstar.triggerit.commands.BadArgumentException;
-import au.com.addstar.triggerit.commands.CommandDispatcher;
 import au.com.addstar.triggerit.commands.CommandSenderType;
 import au.com.addstar.triggerit.commands.ICommand;
 
-public class ActionCommand extends CommandDispatcher implements ICommand
+public class ClearActionsCommand implements ICommand
 {
-	public ActionCommand()
-	{
-		super("Allows you to add, remove, and change actions on triggers");
-		registerCommand(new AddActionCommand());
-		registerCommand(new ClearActionsCommand());
-	}
-
 	@Override
 	public String getName()
 	{
-		return "action";
+		return "clear";
 	}
 
 	@Override
@@ -34,19 +29,19 @@ public class ActionCommand extends CommandDispatcher implements ICommand
 	@Override
 	public String getPermission()
 	{
-		return null;
+		return "triggerit.command.action.add";
 	}
 
 	@Override
 	public String getUsageString( String label, CommandSender sender )
 	{
-		return label;
+		return label + " <trigger>";
 	}
 
 	@Override
 	public String getDescription()
 	{
-		return null;
+		return "Clears all actions from a trigger";
 	}
 
 	@Override
@@ -58,13 +53,25 @@ public class ActionCommand extends CommandDispatcher implements ICommand
 	@Override
 	public boolean onCommand( CommandSender sender, String parent, String label, String[] args ) throws BadArgumentException
 	{
-		return dispatchCommand(sender, parent, label, args);
+		if(args.length != 1)
+			return false;
+		
+		TriggerManager triggers = TriggerItPlugin.getInstance().getTriggerManager();
+		
+		Trigger trigger = triggers.getTrigger(args[0]);
+		if(trigger == null)
+			throw new BadArgumentException(0, "No trigger by that name exists");
+		
+		trigger.clearActions();
+		sender.sendMessage("Actions cleared");
+		
+		return true;
 	}
 
 	@Override
 	public List<String> onTabComplete( CommandSender sender, String parent, String label, String[] args )
 	{
-		return tabComplete(sender, parent, label, args);
+		return null;
 	}
 
 }
