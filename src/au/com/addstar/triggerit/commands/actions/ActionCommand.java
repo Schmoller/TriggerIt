@@ -15,6 +15,7 @@ public class ActionCommand extends CommandDispatcher implements ICommand
 	public ActionCommand()
 	{
 		super("Allows you to add, remove, and change actions on triggers");
+		registerCommand(new AddActionCommand());
 	}
 
 	@Override
@@ -50,7 +51,7 @@ public class ActionCommand extends CommandDispatcher implements ICommand
 	@Override
 	public EnumSet<CommandSenderType> getAllowedSenders()
 	{
-		return null;
+		return EnumSet.of(CommandSenderType.Player, CommandSenderType.Console);
 	}
 
 	@Override

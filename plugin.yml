@@ -10,6 +10,11 @@ permission:
     default: op
     children:
       triggerit.command.trigger: true
+      
+  triggerit.command.action.add:
+    default: op
+    children:
+      triggerit.command.trigger: true
 
 commands:
   trigger:
