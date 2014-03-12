@@ -155,6 +155,12 @@ public class BlockTrigger extends Trigger
 	private BlockVector mLocation;
 	private UUID mWorld;
 	
+	public BlockTrigger() {}
+	private BlockTrigger(String name)
+	{
+		super(name);
+	}
+	
 	public Location getLocation()
 	{
 		World world = Bukkit.getWorld(mWorld);
@@ -198,7 +204,7 @@ public class BlockTrigger extends Trigger
 		removeTriggerAt(mWorld, mLocation, this);
 	}
 	
-	public static BlockTrigger newTrigger(CommandSender sender, String[] args) throws IllegalArgumentException, IllegalStateException, BadArgumentException
+	public static BlockTrigger newTrigger(CommandSender sender, String name, String[] args) throws IllegalArgumentException, IllegalStateException, BadArgumentException
 	{
 		if(!(sender instanceof Player))
 			throw new IllegalArgumentException("Block is only usable by players.");
@@ -210,7 +216,7 @@ public class BlockTrigger extends Trigger
 		if(type == null)
 			throw new BadArgumentException(0, "Unknown block trigger type");
 		
-		BlockTrigger trigger = new BlockTrigger();
+		BlockTrigger trigger = new BlockTrigger(name);
 		trigger.setType(type);
 		
 		mWaitingTriggers.put((Player)sender, trigger);

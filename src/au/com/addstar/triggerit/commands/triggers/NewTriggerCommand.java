@@ -38,7 +38,7 @@ public class NewTriggerCommand implements ICommand
 	@Override
 	public String getUsageString( String label, CommandSender sender )
 	{
-		return label + " <type> <options>";
+		return label + " <name> <type> <options>";
 	}
 
 	@Override
@@ -56,28 +56,33 @@ public class NewTriggerCommand implements ICommand
 	@Override
 	public boolean onCommand( CommandSender sender, String parent, String label, String[] args ) throws BadArgumentException
 	{
-		if(args.length < 1)
+		if(args.length < 2)
 			return false;
 		
 		TriggerManager manager = TriggerItPlugin.getInstance().getTriggerManager();
-		TriggerDefinition def = manager.getType(args[0]);
+		
+		String name = args[0];
+		if(manager.getTrigger(name) != null)
+			throw new BadArgumentException(0, "A trigger already exists with that name");
+		
+		TriggerDefinition def = manager.getType(args[1]);
 		
 		if(def == null)
-			throw new BadArgumentException(0, "Unknown trigger type");
+			throw new BadArgumentException(1, "Unknown trigger type");
 		
 		try
 		{
-			Trigger trigger = def.newTrigger(sender, Arrays.copyOfRange(args, 1, args.length));
+			Trigger trigger = def.newTrigger(sender, name, Arrays.copyOfRange(args, 2, args.length));
 			manager.addTrigger(trigger);
 		}
 		catch(BadArgumentException e)
 		{
-			e.setArgument(e.getArgument()+1);
+			e.setArgument(e.getArgument()+2);
 			throw e;
 		}
 		catch(IllegalStateException e)
 		{
-			throw new IllegalArgumentException("Usage " + parent + label + " <type> " + e.getMessage());
+			throw new IllegalArgumentException("Usage: " + parent + label + " <name> <type> " + e.getMessage());
 		}
 		
 		return true;
@@ -87,14 +92,14 @@ public class NewTriggerCommand implements ICommand
 	public List<String> onTabComplete( CommandSender sender, String parent, String label, String[] args )
 	{
 		TriggerManager manager = TriggerItPlugin.getInstance().getTriggerManager();
-		if(args.length == 1)
-			return Utilities.matchString(args[0], manager.getTypeNames());
-		else
+		if(args.length == 2)
+			return Utilities.matchString(args[1], manager.getTypeNames());
+		else if(args.length > 2)
 		{
-			TriggerDefinition def = manager.getType(args[0]);
+			TriggerDefinition def = manager.getType(args[1]);
 			
 			if(def != null)
-				return def.tabComplete(sender, Arrays.copyOfRange(args, 1, args.length));
+				return def.tabComplete(sender, Arrays.copyOfRange(args, 2, args.length));
 		}
 		return null;
 	}

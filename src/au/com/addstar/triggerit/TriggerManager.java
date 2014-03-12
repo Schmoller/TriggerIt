@@ -51,13 +51,17 @@ public class TriggerManager
 	}
 	
 	private HashMultimap<UUID, Trigger> mAllTriggers = HashMultimap.create();
+	private HashMap<String, Trigger> mNamedTriggers = new HashMap<String, Trigger>();
 
 	public void addTrigger(Trigger trigger)
 	{
+		Validate.isTrue(!mNamedTriggers.containsKey(trigger.getName().toLowerCase()), "Duplicate trigger found");
+		
 		if(trigger.isValid())
 		{
 			// TODO: Way to get world for those that have it
 			mAllTriggers.put(null, trigger);
+			mNamedTriggers.put(trigger.getName().toLowerCase(), trigger);
 			trigger.onLoad();
 		}
 	}
@@ -73,6 +77,11 @@ public class TriggerManager
 		addTrigger(trigger);
 	}
 	
+	public Trigger getTrigger(String name)
+	{
+		return mNamedTriggers.get(name.toLowerCase());
+	}
+	
 	public static class TriggerDefinition
 	{
 		private Constructor<? extends Trigger> mBlankConstructor;
@@ -85,7 +94,7 @@ public class TriggerManager
 			try
 			{
 				mBlankConstructor = triggerClass.getConstructor();
-				mNewTriggerMethod = triggerClass.getMethod("newTrigger", CommandSender.class, String[].class);
+				mNewTriggerMethod = triggerClass.getMethod("newTrigger", CommandSender.class, String.class, String[].class);
 				mTabCompleteMethod = triggerClass.getMethod("tabComplete", CommandSender.class, String[].class);
 				mInitializeMethod = triggerClass.getMethod("initializeType", TriggerItPlugin.class);
 			}
@@ -96,11 +105,11 @@ public class TriggerManager
 		}
 		
 		
-		public Trigger newTrigger(CommandSender sender, String[] args) throws IllegalArgumentException, IllegalStateException, BadArgumentException
+		public Trigger newTrigger(CommandSender sender, String name, String[] args) throws IllegalArgumentException, IllegalStateException, BadArgumentException
 		{
 			try
 			{
-				return (Trigger)mNewTriggerMethod.invoke(null, sender, args);
+				return (Trigger)mNewTriggerMethod.invoke(null, sender, name, args);
 			}
 			catch ( IllegalAccessException e )
 			{

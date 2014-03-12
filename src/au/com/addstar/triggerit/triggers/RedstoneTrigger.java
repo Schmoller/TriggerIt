@@ -128,6 +128,12 @@ public class RedstoneTrigger extends Trigger
 	private BlockVector mLocation;
 	private UUID mWorld;
 	
+	public RedstoneTrigger() {}
+	private RedstoneTrigger(String name)
+	{
+		super(name);
+	}
+	
 	public Location getLocation()
 	{
 		World world = Bukkit.getWorld(mWorld);
@@ -181,7 +187,7 @@ public class RedstoneTrigger extends Trigger
 		removeTriggerAt(mWorld, mLocation, this);
 	}
 	
-	public static RedstoneTrigger newTrigger(CommandSender sender, String[] args) throws IllegalArgumentException, IllegalStateException, BadArgumentException
+	public static RedstoneTrigger newTrigger(CommandSender sender, String name, String[] args) throws IllegalArgumentException, IllegalStateException, BadArgumentException
 	{
 		if(!(sender instanceof Player))
 			throw new IllegalArgumentException("Redstone is only usable by players.");
@@ -209,7 +215,7 @@ public class RedstoneTrigger extends Trigger
 		else if(!args[1].equalsIgnoreCase("low"))
 			throw new BadArgumentException(1, "Expected high or low");
 		
-		RedstoneTrigger trigger = new RedstoneTrigger();
+		RedstoneTrigger trigger = new RedstoneTrigger(name);
 		trigger.mOnHigh = onHigh;
 		trigger.mThreshold = level;
 		

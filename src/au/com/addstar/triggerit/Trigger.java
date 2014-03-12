@@ -9,7 +9,7 @@ import org.apache.commons.lang.Validate;
  * Represents a trigger object.<br/>
  * Each trigger should have the following 3 static methods:<br/>
  * <ul>
- * <li>public ? extends Trigger newTrigger(CommandSender sender, String[] args) throws IllegalArgumentException, IllegalStateException, BadArgumentException</li>
+ * <li>public ? extends Trigger newTrigger(CommandSender sender, String name, String[] args) throws IllegalArgumentException, IllegalStateException, BadArgumentException</li>
  * <li>public List<String> tabComplete(CommanSender sender, String[] args)</li>
  * <li>public void initializeType(TriggerItPlugin plugin)</li>
  * </ul>
@@ -26,6 +26,14 @@ public abstract class Trigger
 {
 	private boolean mIsEnabled = true;
 	private ArrayList<Action> mActions = new ArrayList<Action>();
+	private String mName;
+	
+	public Trigger() {}
+	
+	protected Trigger(String name)
+	{
+		mName = name;
+	}
 	
 	public abstract boolean isValid();
 	
@@ -37,6 +45,11 @@ public abstract class Trigger
 	public void setEnabled(boolean enabled)
 	{
 		mIsEnabled = enabled;
+	}
+	
+	public String getName()
+	{
+		return mName;
 	}
 	
 	public final void addAction(Action action)
@@ -56,6 +69,7 @@ public abstract class Trigger
 	 */
 	public final void trigger(Map<String, Object> arguments)
 	{
+		System.out.println("Trigger " + toString() + " triggered");
 		Validate.notNull(arguments);
 		for(Action action : mActions)
 		{
