@@ -40,9 +40,11 @@ public class CommandAction implements Action
 		
 		if(sender == null)
 			TriggerItPlugin.getInstance().getLogger().warning("Failed to execute command action. Unknown player " + Utilities.replaceArguments(mExecutor, arguments, this));
-		
-		String command = Utilities.replaceArguments(mCommand, arguments, this);
-		Bukkit.dispatchCommand(sender, command);
+		else
+		{
+			String command = Utilities.replaceArguments(mCommand, arguments, this);
+			Bukkit.dispatchCommand(sender, command);
+		}
 	}
 	
 	@Override

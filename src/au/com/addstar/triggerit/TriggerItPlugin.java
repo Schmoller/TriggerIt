@@ -3,6 +3,7 @@ package au.com.addstar.triggerit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import au.com.addstar.triggerit.actions.CommandAction;
+import au.com.addstar.triggerit.actions.MessageAction;
 import au.com.addstar.triggerit.commands.triggers.TriggerCommand;
 import au.com.addstar.triggerit.triggers.*;
 
@@ -53,6 +54,7 @@ public class TriggerItPlugin extends JavaPlugin
 	private void registerActions()
 	{
 		mActions.registerActionType("Command", CommandAction.class);
+		mActions.registerActionType("Message", MessageAction.class);
 	}
 	
 	private void registerCommands()
