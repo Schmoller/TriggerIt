@@ -3,7 +3,6 @@ package au.com.addstar.triggerit.actions;
 import java.util.List;
 import java.util.Map;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -13,33 +12,21 @@ import org.bukkit.entity.Player;
 import au.com.addstar.triggerit.Action;
 import au.com.addstar.triggerit.Utilities;
 import au.com.addstar.triggerit.commands.BadArgumentException;
+import au.com.addstar.triggerit.targets.TargetCS;
 
 public class MessageAction implements Action
 {
 	private String mMessage;
-	private String mTarget;
+	private TargetCS mTarget;
 	
-
 	@Override
 	public void execute( Map<String, Object> arguments )
 	{
+		mTarget.setArgumentMap(arguments);
 		String message = Utilities.replaceArguments(mMessage, arguments, this);
 		
-		if(mTarget.equals("~"))
-			Bukkit.getConsoleSender().sendMessage(message);
-		else if(mTarget.equals("*"))
-			Bukkit.broadcastMessage(message);
-		else if(mTarget.startsWith("#"))
-		{
-			String perm = mTarget.substring(1);
-			Bukkit.broadcast(message, perm);
-		}
-		else
-		{
-			Player player = Bukkit.getPlayerExact(Utilities.replaceArguments(mTarget, arguments, this));
-			if(player != null)
-				player.sendMessage(message);
-		}
+		for(CommandSender target : mTarget.getTargets())
+			target.sendMessage(message);
 	}
 	
 	@Override
@@ -61,7 +48,14 @@ public class MessageAction implements Action
 			throw new IllegalStateException("<target> <message>");
 		
 		MessageAction action = new MessageAction();
-		action.mTarget = args[0];
+		try
+		{
+			action.mTarget = TargetCS.parseTargets(args[0], true);
+		}
+		catch(IllegalArgumentException e)
+		{
+			throw new BadArgumentException(0, e.getMessage());
+		}
 		
 		action.mMessage = "";
 		for(int i = 1; i < args.length; ++i)

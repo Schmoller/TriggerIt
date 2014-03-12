@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
@@ -14,6 +13,8 @@ import org.bukkit.entity.Player;
 import au.com.addstar.triggerit.Action;
 import au.com.addstar.triggerit.Utilities;
 import au.com.addstar.triggerit.commands.BadArgumentException;
+import au.com.addstar.triggerit.targets.ParametricTarget;
+import au.com.addstar.triggerit.targets.Target;
 
 public class SoundAction implements Action
 {
@@ -26,41 +27,29 @@ public class SoundAction implements Action
 	}
 	
 	private Sound mSound;
-	private String mTarget;
+	private Target<? extends Object> mTarget;
 	
 	@Override
 	public void execute( Map<String, Object> arguments )
 	{
-		if(mTarget.equals("*"))
+		if(mTarget instanceof ParametricTarget)
+			((ParametricTarget)mTarget).setArgumentMap(arguments);
+		
+		List<? extends Object> targets = mTarget.getTargets();
+		for(Object obj : targets)
 		{
-			for(Player player : Bukkit.getOnlinePlayers())
+			if(obj instanceof Player)
+				((Player)obj).playSound(((Player)obj).getLocation(), mSound, 1.0f, 1.0f);
+			else if(obj instanceof Location)
 			{
-				player.playSound(player.getLocation(), mSound, 1.0f, 1.0f);
+				Location loc = (Location)obj;
+				loc.getWorld().playSound(loc, mSound, 1.0f, 1.0f);
 			}
-		}
-		else if(mTarget.startsWith("#"))
-		{
-			String perm = mTarget.substring(1);
-			for(Player player : Bukkit.getOnlinePlayers())
+			else if(obj instanceof Block)
 			{
-				if(player.hasPermission(perm))
-					player.playSound(player.getLocation(), mSound, 1.0f, 1.0f);
+				Block block = (Block)obj;
+				block.getWorld().playSound(block.getLocation(), mSound, 1.0f, 1.0f);
 			}
-		}
-		else if(mTarget.startsWith("!#"))
-		{
-			String perm = mTarget.substring(2);
-			for(Player player : Bukkit.getOnlinePlayers())
-			{
-				if(!player.hasPermission(perm))
-					player.playSound(player.getLocation(), mSound, 1.0f, 1.0f);
-			}
-		}
-		else
-		{
-			Player player = Bukkit.getPlayerExact(Utilities.replaceArguments(mTarget, arguments, this));
-			if(player != null)
-				player.playSound(player.getLocation(), mSound, 1.0f, 1.0f);
 		}
 	}
 
@@ -83,7 +72,14 @@ public class SoundAction implements Action
 			throw new IllegalStateException("<target> <sound>");
 		
 		SoundAction action = new SoundAction();
-		action.mTarget = args[0];
+		try
+		{
+			action.mTarget = Target.parseTargets(args[0], false);
+		}
+		catch(IllegalArgumentException e)
+		{
+			throw new BadArgumentException(0, e.getMessage());
+		}
 		
 		for(Sound sound : Sound.values())
 		{

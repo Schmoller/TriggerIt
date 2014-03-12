@@ -10,41 +10,28 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import au.com.addstar.triggerit.Action;
-import au.com.addstar.triggerit.TriggerItPlugin;
 import au.com.addstar.triggerit.Utilities;
 import au.com.addstar.triggerit.commands.BadArgumentException;
+import au.com.addstar.triggerit.targets.TargetCS;
 
 public class CommandAction implements Action
 {
 	private String mCommand;
-	private String mExecutor;
+	private TargetCS mExecutor;
 	
 	public CommandAction()
 	{
 	}
 	
-	public CommandAction(String command, String executor)
-	{
-		mCommand = command;
-		mExecutor = executor;
-	}
-	
 	@Override
 	public void execute( Map<String, Object> arguments )
 	{
-		CommandSender sender;
-		if(mExecutor.equals("~"))
-			sender = Bukkit.getConsoleSender();
-		else
-			sender = Bukkit.getPlayerExact(Utilities.replaceArguments(mExecutor, arguments, this));
+		mExecutor.setArgumentMap(arguments);
 		
-		if(sender == null)
-			TriggerItPlugin.getInstance().getLogger().warning("Failed to execute command action. Unknown player " + Utilities.replaceArguments(mExecutor, arguments, this));
-		else
-		{
-			String command = Utilities.replaceArguments(mCommand, arguments, this);
+		String command = Utilities.replaceArguments(mCommand, arguments, this);
+		
+		for(CommandSender sender : mExecutor.getTargets())
 			Bukkit.dispatchCommand(sender, command);
-		}
 	}
 	
 	@Override
@@ -66,7 +53,14 @@ public class CommandAction implements Action
 			throw new IllegalStateException("<sender> <command>");
 		
 		CommandAction action = new CommandAction();
-		action.mExecutor = args[0];
+		try
+		{
+			action.mExecutor = TargetCS.parseTargets(args[0], true);
+		}
+		catch(IllegalArgumentException e)
+		{
+			throw new BadArgumentException(0, e.getMessage());
+		}
 		
 		action.mCommand = "";
 		for(int i = 1; i < args.length; ++i)
