@@ -4,6 +4,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import au.com.addstar.triggerit.actions.CommandAction;
 import au.com.addstar.triggerit.actions.MessageAction;
+import au.com.addstar.triggerit.actions.SoundAction;
 import au.com.addstar.triggerit.commands.triggers.TriggerCommand;
 import au.com.addstar.triggerit.triggers.*;
 
@@ -55,6 +56,7 @@ public class TriggerItPlugin extends JavaPlugin
 	{
 		mActions.registerActionType("Command", CommandAction.class);
 		mActions.registerActionType("Message", MessageAction.class);
+		mActions.registerActionType("SoundEffect", SoundAction.class);
 	}
 	
 	private void registerCommands()
