@@ -47,6 +47,7 @@ public class TriggerItPlugin extends JavaPlugin
 	private void registerTriggers()
 	{
 		mTriggers.registerTriggerType("Block", BlockTrigger.class);
+		mTriggers.registerTriggerType("Custom", CustomTrigger.class);
 //		mTriggers.registerTriggerType("ChatCommand", ChatCommandTrigger.class);
 //		mTriggers.registerTriggerType("Login", LoginTrigger.class);
 		mTriggers.registerTriggerType("Redstone", RedstoneTrigger.class);
