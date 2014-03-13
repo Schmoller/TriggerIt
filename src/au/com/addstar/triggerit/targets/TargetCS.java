@@ -21,6 +21,8 @@ public abstract class TargetCS extends Target<CommandSender>
 			return new PermissionTarget(targetString.substring(2), true);
 		else if(targetString.startsWith("@"))
 			return new CSParametricTarget(targetString.substring(1));
+		else if(targetString.equals("*"))
+			return new AllTarget(allowConsole);
 		else
 		{
 			OfflinePlayer player = Bukkit.getOfflinePlayer(targetString);

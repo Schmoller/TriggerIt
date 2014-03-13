@@ -1,5 +1,6 @@
 package au.com.addstar.triggerit;
 
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import au.com.addstar.triggerit.actions.CommandAction;
@@ -45,11 +46,13 @@ public class TriggerItPlugin extends JavaPlugin
 	
 	private void registerTriggers()
 	{
-		//mTriggers.registerTriggerType("Region", RegionTrigger.class);
 		mTriggers.registerTriggerType("Block", BlockTrigger.class);
 //		mTriggers.registerTriggerType("ChatCommand", ChatCommandTrigger.class);
 //		mTriggers.registerTriggerType("Login", LoginTrigger.class);
 		mTriggers.registerTriggerType("Redstone", RedstoneTrigger.class);
+		
+		if(Bukkit.getPluginManager().isPluginEnabled("WorldGuard"))
+			mTriggers.registerTriggerType("Region", RegionTrigger.class);
 	}
 	
 	private void registerActions()

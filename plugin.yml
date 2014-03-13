@@ -3,6 +3,8 @@ version: ${pom.version}
 
 main: au.com.addstar.triggerit.TriggerItPlugin
 
+softdepend: [WorldGuard]
+
 permission:
   triggerit.command.trigger:
     default: op
