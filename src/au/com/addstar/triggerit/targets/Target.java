@@ -9,6 +9,14 @@ public abstract class Target<T>
 	
 	public void setArgumentMap(Map<String, Object> arguments) {} 
 	
+	public static Target<? extends Object> parseSingleTarget(String targetString, boolean allowConsole) throws IllegalArgumentException
+	{
+		if(targetString.startsWith("@"))
+			return new ParametricTarget(targetString.substring(1));
+		else
+			return TargetCS.parseSingleTarget(targetString, allowConsole);
+	}
+	
 	public static Target<? extends Object> parseTargets(String targetString, boolean allowConsole) throws IllegalArgumentException
 	{
 		if(targetString.startsWith("@"))
