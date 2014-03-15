@@ -51,7 +51,7 @@
     <!-- CraftBukkit Dependency for experimental features -->
     <dependency>
       <groupId>org.bukkit</groupId>
-      <artifactId>craftbukkit</artifactId>
+      <artifactId>bukkit</artifactId>
       <version>1.7.2-R0.4-SNAPSHOT</version>
     </dependency>        
     
@@ -69,6 +69,10 @@
       	<exclusion>
       	  <groupId>com.sk89q</groupId>
       	  <artifactId>commandbook</artifactId>
+      	</exclusion>
+      	<exclusion>
+      	  <groupId>org.bukkit</groupId>
+      	  <artifactId>bukkit</artifactId>
       	</exclusion>
       </exclusions>
     </dependency>

@@ -23,8 +23,10 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.util.BlockVector;
+import org.bukkit.util.Vector;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
@@ -46,7 +48,8 @@ public class BlockTrigger extends Trigger implements WorldSpecific
 		RightClick,
 		Click,
 		Physical,
-		BlockUpdate
+		BlockUpdate,
+		Shot
 	}
 	
 	private static ArrayList<String> mTriggerTypeNames;
@@ -296,7 +299,14 @@ public class BlockTrigger extends Trigger implements WorldSpecific
 					continue;
 				
 				if(trigger.getType() == TriggerType.Place || trigger.getType() == TriggerType.Change)
-					trigger.trigger(new ImmutableMap.Builder<String, Object>().put("player", event.getPlayer()).build());
+				{
+					trigger.trigger(new ImmutableMap.Builder<String, Object>()
+						.put("player", event.getPlayer())
+						.put("block", event.getBlock())
+						.put("location", event.getBlock().getLocation())
+						.put("world", event.getBlock().getWorld())
+						.build());
+				}
 			}
 		}
 		
@@ -316,6 +326,7 @@ public class BlockTrigger extends Trigger implements WorldSpecific
 						.put("player", event.getPlayer())
 						.put("block", event.getBlock())
 						.put("location", event.getBlock().getLocation())
+						.put("world", event.getBlock().getWorld())
 						.build());
 				}
 			}
@@ -336,6 +347,7 @@ public class BlockTrigger extends Trigger implements WorldSpecific
 					trigger.trigger(new ImmutableMap.Builder<String, Object>()
 						.put("block", event.getBlock())
 						.put("location", event.getBlock().getLocation())
+						.put("world", event.getBlock().getWorld())
 						.build());
 				}
 			}
@@ -362,7 +374,60 @@ public class BlockTrigger extends Trigger implements WorldSpecific
 						.put("player", event.getPlayer())
 						.put("block", event.getClickedBlock())
 						.put("location", event.getClickedBlock().getLocation())
+						.put("world", event.getClickedBlock().getWorld())
 						.build());
+				}
+			}
+		}
+		@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
+		public void onProjectileHit(ProjectileHitEvent event)
+		{
+			Location loc = event.getEntity().getLocation();
+			Vector dir = event.getEntity().getVelocity().normalize();
+			
+			Location newLoc = loc.clone();
+			
+			Block block = newLoc.getBlock();
+			float f = 0;
+			while(block.isEmpty() && f < 1.4f)
+			{
+				newLoc.add(dir.clone().multiply(f));
+				block = newLoc.getBlock();
+				
+				f += 0.1;
+			}
+
+			if(block.isEmpty())
+				return;
+			
+			Set<BlockTrigger> triggers = getTriggersAt(block);
+			
+			for(BlockTrigger trigger : triggers)
+			{
+				if(!trigger.isEnabled())
+					continue;
+				
+				if(trigger.getType() == TriggerType.Shot)
+				{
+					if(event.getEntity().getShooter() instanceof Player)
+					{
+						trigger.trigger(new ImmutableMap.Builder<String, Object>()
+							.put("player", (Player)event.getEntity().getShooter())
+							.put("block", block)
+							.put("location", block.getLocation())
+							.put("world", block.getWorld())
+							.put("projectile", event.getEntity().getType().name())
+							.build());
+					}
+					else
+					{
+						trigger.trigger(new ImmutableMap.Builder<String, Object>()
+							.put("block", block)
+							.put("location", block.getLocation())
+							.put("world", block.getWorld())
+							.put("projectile", event.getEntity().getType().name())
+							.build());
+					}
 				}
 			}
 		}
