@@ -70,19 +70,6 @@ public class SoundAction implements Action
 		mTarget.save(target);
 	}
 
-	@Override
-	public String resolveArgument( Object argument )
-	{
-		if(argument instanceof Player)
-			return ((Player)argument).getName();
-		else if(argument instanceof Block)
-			return String.format("%d %d %d", ((Block) argument).getX(), ((Block) argument).getY(), ((Block) argument).getZ());
-		else if(argument instanceof Location)
-			return String.format("%d %d %d", ((Location) argument).getX(), ((Location) argument).getY(), ((Location) argument).getZ());
-		
-		return argument.toString();
-	}
-	
 	public static SoundAction newAction(CommandSender sender, String[] args) throws IllegalArgumentException, IllegalStateException, BadArgumentException
 	{
 		if(args.length != 2)

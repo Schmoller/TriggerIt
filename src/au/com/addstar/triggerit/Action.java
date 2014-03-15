@@ -9,8 +9,6 @@ public interface Action
 {
 	public void execute(Map<String, Object> arguments);
 	
-	public String resolveArgument(Object argument);
-	
 	public void save(ConfigurationSection section);
 	public void load(ConfigurationSection section) throws InvalidConfigurationException;
 }

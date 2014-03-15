@@ -4,14 +4,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
-import org.bukkit.entity.Player;
-
 import au.com.addstar.triggerit.Action;
+import au.com.addstar.triggerit.BasicTextifier;
 import au.com.addstar.triggerit.Utilities;
 import au.com.addstar.triggerit.commands.BadArgumentException;
 import au.com.addstar.triggerit.targets.Target;
@@ -26,23 +23,10 @@ public class MessageAction implements Action
 	public void execute( Map<String, Object> arguments )
 	{
 		mTarget.setArgumentMap(arguments);
-		String message = Utilities.replaceArguments(mMessage, arguments, this);
+		String message = Utilities.replaceArguments(mMessage, arguments, BasicTextifier.instance);
 		
 		for(CommandSender target : mTarget.getTargets())
 			target.sendMessage(message);
-	}
-	
-	@Override
-	public String resolveArgument( Object argument )
-	{
-		if(argument instanceof Player)
-			return ((Player)argument).getName();
-		else if(argument instanceof Block)
-			return String.format("%d %d %d", ((Block) argument).getX(), ((Block) argument).getY(), ((Block) argument).getZ());
-		else if(argument instanceof Location)
-			return String.format("%d %d %d", ((Location) argument).getX(), ((Location) argument).getY(), ((Location) argument).getZ());
-		
-		return argument.toString();
 	}
 	
 	@Override

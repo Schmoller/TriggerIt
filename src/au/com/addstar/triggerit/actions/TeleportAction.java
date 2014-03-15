@@ -50,12 +50,6 @@ public class TeleportAction implements Action
 	}
 
 	@Override
-	public String resolveArgument( Object argument )
-	{
-		return String.valueOf(argument);
-	}
-
-	@Override
 	public void load( ConfigurationSection section ) throws InvalidConfigurationException
 	{
 		mTarget = (TargetCS)Target.loadTarget(section.getConfigurationSection("target"));

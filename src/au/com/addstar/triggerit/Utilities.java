@@ -25,7 +25,7 @@ public class Utilities
 	
 	private static Pattern mPattern = Pattern.compile("@\\[([a-zA-Z0-9_]+)\\]");
 	
-	public static String replaceArguments(String str, Map<String, Object> arguments, Action action)
+	public static String replaceArguments(String str, Map<String, Object> arguments, ITextifier textifier)
 	{
 		Matcher match = mPattern.matcher(str);
 		
@@ -33,8 +33,8 @@ public class Utilities
 		while(match.find())
 		{
 			Object obj = arguments.get(match.group(1));
-			if(action != null && obj != null)
-				obj = action.resolveArgument(obj);
+			if(textifier != null && obj != null)
+				obj = textifier.asString(obj);
 			
 			match.appendReplacement(buffer, (obj != null ? obj.toString() : match.group(0)));
 		}
