@@ -42,5 +42,11 @@ public class PlayerTarget extends TargetCS
 	{
 		mTarget = Bukkit.getOfflinePlayer(section.getString("player"));
 	}
+	
+	@Override
+	public String describe()
+	{
+		return "Player: " + mTarget.getName();
+	}
 
 }

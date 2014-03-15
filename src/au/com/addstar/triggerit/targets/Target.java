@@ -21,6 +21,8 @@ public abstract class Target<T>
 	
 	protected abstract void load(ConfigurationSection section) throws InvalidConfigurationException;
 	
+	public abstract String describe();
+	
 	public static Target<? extends Object> parseSingleTarget(String targetString, boolean allowConsole) throws IllegalArgumentException
 	{
 		if(targetString.startsWith("@"))

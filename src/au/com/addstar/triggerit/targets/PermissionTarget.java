@@ -68,4 +68,13 @@ public class PermissionTarget extends TargetCS
 		section.set("perm", mPermission);
 		section.set("invert", mInvert);
 	}
+	
+	@Override
+	public String describe()
+	{
+		if(mInvert)
+			return "Players without permisison '" + mPermission + "'";
+		else
+			return "Players with permisison '" + mPermission + "'";
+	}
 }

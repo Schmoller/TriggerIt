@@ -46,4 +46,10 @@ public class AllTarget extends TargetCS
 		super.save(section);
 		section.set("console", mConsole);
 	}
+	
+	@Override
+	public String describe()
+	{
+		return "Everybody";
+	}
 }

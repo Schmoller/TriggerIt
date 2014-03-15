@@ -81,6 +81,32 @@ public class TimeTrigger extends Trigger implements WorldSpecific
 			section.set("world", mWorld.toString());
 	}
 	
+	@Override
+	protected String[] describeTrigger()
+	{
+		String worldName = "Any world";
+		if(mWorld != null)
+		{
+			World world = Bukkit.getWorld(mWorld);
+			if(world != null)
+				worldName = world.getName();
+			else
+				worldName = mWorld.toString();
+		}
+		
+		int ticks = mTime + 6000;
+		if(ticks >= 24000)
+			ticks -= 24000;
+		
+		int hours = ticks / 1000;
+		int minutes = (ticks - (hours * 1000)) * 60 / 1000;
+		
+		return new String[] {
+			ChatColor.GRAY + "Time: " + ChatColor.YELLOW + String.format("%02d:%02d", hours, minutes),
+			ChatColor.GRAY + "World: " + ChatColor.YELLOW + worldName,
+		};
+	}
+	
 	private static Pattern mTimePattern = Pattern.compile("([\\d]+)ticks|(\\d{2}:\\d{2})|(\\d{1,2}(?::\\d{1,2})?)(am|pm)");
 	
 	public static TimeTrigger newTrigger(CommandSender sender, String name, String[] args) throws IllegalStateException, BadArgumentException

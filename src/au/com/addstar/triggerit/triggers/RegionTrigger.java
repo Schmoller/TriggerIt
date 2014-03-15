@@ -163,6 +163,16 @@ public class RegionTrigger extends Trigger implements WorldSpecific
 		section.set("region", mRegionId);
 	}
 	
+	@Override
+	protected String[] describeTrigger()
+	{
+		World world = Bukkit.getWorld(mWorld);
+		
+		return new String[] {
+			ChatColor.GRAY + "Region: " + ChatColor.YELLOW + mRegionId,
+			ChatColor.GRAY + "World: " + ChatColor.YELLOW + (world != null ? world.getName() : mWorld.toString())
+		};
+	}
 	
 	public static RegionTrigger newTrigger(CommandSender sender, String name, String[] args) throws IllegalArgumentException, IllegalStateException, BadArgumentException
 	{

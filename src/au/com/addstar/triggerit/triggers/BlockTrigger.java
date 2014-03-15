@@ -238,6 +238,17 @@ public class BlockTrigger extends Trigger implements WorldSpecific
 		section.set("type", mType.name());
 	}
 	
+	@Override
+	protected String[] describeTrigger()
+	{
+		World world = Bukkit.getWorld(mWorld);
+		
+		return new String[] {
+			ChatColor.GRAY + "Location: " + ChatColor.YELLOW + String.format("%d, %d, %d in %s", mLocation.getBlockX(), mLocation.getBlockY(), mLocation.getBlockZ(), (world != null ? world.getName() : mWorld.toString())),
+			ChatColor.GRAY + "Trigger on: " + ChatColor.YELLOW + mType.name()
+		};
+	}
+	
 	public static BlockTrigger newTrigger(CommandSender sender, String name, String[] args) throws IllegalArgumentException, IllegalStateException, BadArgumentException
 	{
 		if(!(sender instanceof Player))

@@ -226,6 +226,18 @@ public class RedstoneTrigger extends Trigger implements WorldSpecific
 			return String.format("Redstone trigger @(%d,%d,%d,%s) on <= %d", mLocation.getBlockX(), mLocation.getBlockY(), mLocation.getBlockZ(), (world != null ? world.getName() : "Unloaded"), mThreshold);
 	}
 	
+	@Override
+	protected String[] describeTrigger()
+	{
+		World world = Bukkit.getWorld(mWorld);
+		
+		return new String[] {
+			ChatColor.GRAY + "Location: " + ChatColor.YELLOW + String.format("%d, %d, %d in %s", mLocation.getBlockX(), mLocation.getBlockY(), mLocation.getBlockZ(), (world != null ? world.getName() : mWorld.toString())),
+			ChatColor.GRAY + "Trigger on: " + ChatColor.YELLOW + (mOnHigh ? "High signal" : "Low signal"),
+			ChatColor.GRAY + "Threshold: " + ChatColor.YELLOW + mThreshold
+		};
+	}
+	
 	public static RedstoneTrigger newTrigger(CommandSender sender, String name, String[] args) throws IllegalArgumentException, IllegalStateException, BadArgumentException
 	{
 		if(!(sender instanceof Player))

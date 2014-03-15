@@ -1,6 +1,7 @@
 package au.com.addstar.triggerit;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.Validate;
@@ -137,4 +138,29 @@ public abstract class Trigger
 	
 	protected abstract void save(ConfigurationSection section);
 	protected abstract void load(ConfigurationSection section) throws InvalidConfigurationException;
+	
+	public List<String> describe()
+	{
+		ArrayList<String> lines = new ArrayList<String>();
+		lines.add(String.format("&6Trigger Info: &f%s", mName));
+		lines.add(String.format(" &7Type: &e%s", TriggerItPlugin.getInstance().getTriggerManager().getTypeName(this)));
+		String[] desc = describeTrigger();
+		for(String line : desc)
+			lines.add(String.format(" %s", line));
+		
+		lines.add(String.format("&6Actions: &f%d", mActions.size()));
+		int index = 0;
+		for(Action action : mActions)
+		{
+			lines.add(String.format(" &f%d&7:", index++));
+			desc = action.describe();
+			for(String line : desc)
+				lines.add(String.format(" %s", line));
+			lines.add("");
+		}
+		
+		return lines;
+	}
+	
+	protected abstract String[] describeTrigger();
 }

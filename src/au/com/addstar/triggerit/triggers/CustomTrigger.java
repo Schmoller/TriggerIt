@@ -33,6 +33,12 @@ public class CustomTrigger extends Trigger
 	{
 	}
 	
+	@Override
+	protected String[] describeTrigger()
+	{
+		return new String[] {};
+	}
+	
 	public static CustomTrigger newTrigger(CommandSender sender, String name, String[] args) throws IllegalStateException
 	{
 		if(args.length != 0)

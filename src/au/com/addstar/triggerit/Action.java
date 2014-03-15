@@ -11,4 +11,6 @@ public interface Action
 	
 	public void save(ConfigurationSection section);
 	public void load(ConfigurationSection section) throws InvalidConfigurationException;
+	
+	public String[] describe();
 }

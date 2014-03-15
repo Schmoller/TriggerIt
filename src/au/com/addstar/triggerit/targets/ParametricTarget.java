@@ -48,4 +48,9 @@ public class ParametricTarget extends Target<Object>
 		section.set("argument", mArgument);
 	}
 
+	@Override
+	public String describe()
+	{
+		return "Value of argument '" + mArgument + "'";
+	}
 }

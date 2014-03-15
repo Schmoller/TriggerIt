@@ -54,4 +54,10 @@ public class CSParametricTarget extends TargetCS
 		super.save(section);
 		section.set("argument", mArgument);
 	}
+	
+	@Override
+	public String describe()
+	{
+		return "Player resolved from argument '" + mArgument + "'";
+	}
 }

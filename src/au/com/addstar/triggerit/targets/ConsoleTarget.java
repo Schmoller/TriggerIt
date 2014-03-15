@@ -27,4 +27,9 @@ public class ConsoleTarget extends TargetCS
 		super.save(section);
 	}
 
+	@Override
+	public String describe()
+	{
+		return "Console";
+	}
 }

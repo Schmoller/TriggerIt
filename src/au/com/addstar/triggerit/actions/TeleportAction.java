@@ -65,6 +65,16 @@ public class TeleportAction implements Action
 		mDestination.save(destination);
 	}
 	
+	@Override
+	public String[] describe()
+	{
+		return new String[] {
+			ChatColor.GOLD + "Teleport action:",
+			ChatColor.GRAY + " Target: " + ChatColor.YELLOW + mTarget.describe(),
+			ChatColor.GRAY + " Destination: " + ChatColor.YELLOW + mDestination.describe()
+		};
+	}
+	
 	public static TeleportAction newAction(CommandSender sender, String[] args) throws BadArgumentException, IllegalStateException
 	{
 		if(args.length == 0)

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
@@ -68,6 +69,16 @@ public class SoundAction implements Action
 		section.set("sound", mSound.name());
 		ConfigurationSection target = section.createSection("target");
 		mTarget.save(target);
+	}
+	
+	@Override
+	public String[] describe()
+	{
+		return new String[] {
+			ChatColor.GOLD + "Sound action:",
+			ChatColor.GRAY + " Sound: " + ChatColor.YELLOW + mSound.name(),
+			ChatColor.GRAY + " Target: " + ChatColor.YELLOW + mTarget.describe()
+		};
 	}
 
 	public static SoundAction newAction(CommandSender sender, String[] args) throws IllegalArgumentException, IllegalStateException, BadArgumentException

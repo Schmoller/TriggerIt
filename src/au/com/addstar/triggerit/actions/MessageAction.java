@@ -44,6 +44,16 @@ public class MessageAction implements Action
 		mTarget.save(target);
 	}
 	
+	@Override
+	public String[] describe()
+	{
+		return new String[] {
+			ChatColor.GOLD + "Message action:",
+			ChatColor.GRAY + " Message: " + ChatColor.YELLOW + mMessage,
+			ChatColor.GRAY + " Target: " + ChatColor.YELLOW + mTarget.describe()
+		};
+	}
+	
 	public static MessageAction newAction(CommandSender sender, String[] args) throws IllegalArgumentException, IllegalStateException, BadArgumentException
 	{
 		if(args.length < 2)

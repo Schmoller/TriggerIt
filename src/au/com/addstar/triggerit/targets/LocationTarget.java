@@ -54,4 +54,14 @@ public class LocationTarget extends Target<RelativeLocation>
 			mWorld = null;
 		mLocation = (RelativeLocation)section.get("location");
 	}
+	
+	@Override
+	public String describe()
+	{
+		mLocation.setSource(null);
+		if(mLocation.getWorld() == null)
+			return String.format("Location: %s %s %s %s %s", (mLocation.isRelX() ? "~" : "") + mLocation.getX(), (mLocation.isRelY() ? "~" : "") + mLocation.getY(), (mLocation.isRelZ() ? "~" : "") + mLocation.getZ(), (mLocation.isRelYaw() ? "~" : "") + mLocation.getYaw(), (mLocation.isRelPitch() ? "~" : "") + mLocation.getPitch());
+		else
+			return String.format("Location: %s %s %s %s %s %s", mLocation.getWorld().getName(), (mLocation.isRelX() ? "~" : "") + mLocation.getX(), (mLocation.isRelY() ? "~" : "") + mLocation.getY(), (mLocation.isRelZ() ? "~" : "") + mLocation.getZ(), (mLocation.isRelYaw() ? "~" : "") + mLocation.getYaw(), (mLocation.isRelPitch() ? "~" : "") + mLocation.getPitch());
+	}
 }

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -47,6 +48,16 @@ public class CommandAction implements Action
 		section.set("command", mCommand);
 		ConfigurationSection target = section.createSection("target");
 		mExecutor.save(target);
+	}
+	
+	@Override
+	public String[] describe()
+	{
+		return new String[] {
+			ChatColor.GOLD + "Command action:",
+			ChatColor.GRAY + " Command: " + ChatColor.YELLOW + mCommand,
+			ChatColor.GRAY + " Target: " + ChatColor.YELLOW + mExecutor.describe()
+		};
 	}
 	
 	public static CommandAction newAction(CommandSender sender, String[] args) throws IllegalArgumentException, IllegalStateException, BadArgumentException
