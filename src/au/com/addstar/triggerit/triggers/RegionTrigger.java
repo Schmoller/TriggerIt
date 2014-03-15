@@ -13,6 +13,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -30,9 +31,10 @@ import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import au.com.addstar.triggerit.Trigger;
 import au.com.addstar.triggerit.TriggerItPlugin;
 import au.com.addstar.triggerit.Utilities;
+import au.com.addstar.triggerit.WorldSpecific;
 import au.com.addstar.triggerit.commands.BadArgumentException;
 
-public class RegionTrigger extends Trigger
+public class RegionTrigger extends Trigger implements WorldSpecific
 {
 	public enum RegionTriggerType
 	{
@@ -125,6 +127,12 @@ public class RegionTrigger extends Trigger
 		removeTrigger(mWorld, mRegion, this);
 	}
 	
+	@Override
+	public UUID getWorld()
+	{
+		return mWorld;
+	}
+	
 	public RegionTriggerType getType()
 	{
 		return mType;
@@ -140,6 +148,21 @@ public class RegionTrigger extends Trigger
 		else
 			return "Region trigger for " + mRegionId + " in " + mWorld;
 	}
+	
+	@Override
+	protected void load( ConfigurationSection section )
+	{
+		mWorld = UUID.fromString(section.getString("world"));
+		mRegionId = section.getString("region");
+	}
+	
+	@Override
+	protected void save( ConfigurationSection section )
+	{
+		section.set("world", mWorld.toString());
+		section.set("region", mRegionId);
+	}
+	
 	
 	public static RegionTrigger newTrigger(CommandSender sender, String name, String[] args) throws IllegalArgumentException, IllegalStateException, BadArgumentException
 	{

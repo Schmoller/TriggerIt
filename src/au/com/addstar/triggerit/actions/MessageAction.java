@@ -7,11 +7,14 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Player;
 
 import au.com.addstar.triggerit.Action;
 import au.com.addstar.triggerit.Utilities;
 import au.com.addstar.triggerit.commands.BadArgumentException;
+import au.com.addstar.triggerit.targets.Target;
 import au.com.addstar.triggerit.targets.TargetCS;
 
 public class MessageAction implements Action
@@ -40,6 +43,21 @@ public class MessageAction implements Action
 			return String.format("%d %d %d", ((Location) argument).getX(), ((Location) argument).getY(), ((Location) argument).getZ());
 		
 		return argument.toString();
+	}
+	
+	@Override
+	public void load( ConfigurationSection section ) throws InvalidConfigurationException
+	{
+		mMessage = section.getString("message");
+		mTarget = (TargetCS)Target.loadTarget(section.getConfigurationSection("target"));
+	}
+	
+	@Override
+	public void save( ConfigurationSection section )
+	{
+		section.set("message", mMessage);
+		ConfigurationSection target = section.createSection("target");
+		mTarget.save(target);
 	}
 	
 	public static MessageAction newAction(CommandSender sender, String[] args) throws IllegalArgumentException, IllegalStateException, BadArgumentException

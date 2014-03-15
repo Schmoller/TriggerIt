@@ -4,6 +4,10 @@ import java.util.ArrayList;
 import java.util.Map;
 
 import org.apache.commons.lang.Validate;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.InvalidConfigurationException;
+
+import au.com.addstar.triggerit.ActionManager.ActionDefinition;
 
 /**
  * Represents a trigger object.<br/>
@@ -83,4 +87,54 @@ public abstract class Trigger
 	public void onLoad() {}
 	public void onUnload() {}
 	
+	public void write(ConfigurationSection section)
+	{
+		section.set("name", mName);
+		section.set("enabled", mIsEnabled);
+		ConfigurationSection settings = section.createSection("settings");
+		save(settings);
+		ConfigurationSection actions = section.createSection("actions");
+		actions.set("count", mActions.size());
+		
+		ActionManager manager = TriggerItPlugin.getInstance().getActionManager();
+		
+		for(int i = 0; i < mActions.size(); ++i)
+		{
+			ConfigurationSection act = actions.createSection(String.valueOf(i));
+			mActions.get(i).save(act);
+			
+			act.set("type", manager.getTypeFrom(mActions.get(i)));
+		}
+	}
+	
+	public void read(ConfigurationSection section) throws InvalidConfigurationException
+	{
+		mName = section.getString("name");
+		mIsEnabled = section.getBoolean("enabled");
+		load(section.getConfigurationSection("settings"));
+		
+		ConfigurationSection actions = section.getConfigurationSection("actions");
+		int count = actions.getInt("count");
+		
+		ActionManager manager = TriggerItPlugin.getInstance().getActionManager();
+		
+		mActions.clear();
+		for(int i = 0; i < count; ++i)
+		{
+			ConfigurationSection act = actions.getConfigurationSection(String.valueOf(i));
+			String typeName = act.getString("type");
+			
+			ActionDefinition def = manager.getType(typeName);
+			if(def == null)
+				throw new InvalidConfigurationException("Unknown action type " + typeName);
+			
+			Action action = def.newBlankAction();
+			
+			action.load(act);
+			mActions.add(action);
+		}
+	}
+	
+	protected abstract void save(ConfigurationSection section);
+	protected abstract void load(ConfigurationSection section) throws InvalidConfigurationException;
 }

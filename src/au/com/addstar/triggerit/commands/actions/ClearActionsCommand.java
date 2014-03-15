@@ -63,6 +63,7 @@ public class ClearActionsCommand implements ICommand
 			throw new BadArgumentException(0, "No trigger by that name exists");
 		
 		trigger.clearActions();
+		triggers.saveTrigger(trigger);
 		sender.sendMessage("Actions cleared");
 		
 		return true;

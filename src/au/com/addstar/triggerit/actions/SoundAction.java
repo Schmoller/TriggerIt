@@ -8,6 +8,8 @@ import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Player;
 
 import au.com.addstar.triggerit.Action;
@@ -51,6 +53,21 @@ public class SoundAction implements Action
 				block.getWorld().playSound(block.getLocation(), mSound, 1.0f, 1.0f);
 			}
 		}
+	}
+	
+	@Override
+	public void load( ConfigurationSection section ) throws InvalidConfigurationException
+	{
+		mSound = Sound.valueOf(section.getString("sound"));
+		mTarget = Target.loadTarget(section.getConfigurationSection("target"));
+	}
+	
+	@Override
+	public void save( ConfigurationSection section )
+	{
+		section.set("sound", mSound.name());
+		ConfigurationSection target = section.createSection("target");
+		mTarget.save(target);
 	}
 
 	@Override

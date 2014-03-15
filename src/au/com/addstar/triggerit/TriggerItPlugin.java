@@ -1,6 +1,7 @@
 package au.com.addstar.triggerit;
 
 import org.bukkit.Bukkit;
+import org.bukkit.World;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import au.com.addstar.triggerit.actions.CommandAction;
@@ -43,6 +44,27 @@ public class TriggerItPlugin extends JavaPlugin
 		registerCommands();
 		
 		mTriggers.initializeAll(this);
+		
+		Bukkit.getScheduler().runTask(this, new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				for(World world : Bukkit.getWorlds())
+					mTriggers.loadAll(world.getUID());
+				
+				mTriggers.loadAll(null);
+				
+				Bukkit.getPluginManager().registerEvents(mTriggers, TriggerItPlugin.this);
+			}
+		});
+	}
+	
+	@Override
+	public void onDisable()
+	{
+		if(mTriggers != null)
+			mTriggers.unloadAll();
 	}
 	
 	private void registerTriggers()

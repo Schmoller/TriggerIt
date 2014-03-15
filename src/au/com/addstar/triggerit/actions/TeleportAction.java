@@ -6,6 +6,8 @@ import java.util.Map;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import au.com.addstar.triggerit.Action;
@@ -53,6 +55,21 @@ public class TeleportAction implements Action
 		return String.valueOf(argument);
 	}
 
+	@Override
+	public void load( ConfigurationSection section ) throws InvalidConfigurationException
+	{
+		mTarget = (TargetCS)Target.loadTarget(section.getConfigurationSection("target"));
+		mDestination = Target.loadTarget(section.getConfigurationSection("dest"));
+	}
+	
+	@Override
+	public void save( ConfigurationSection section )
+	{
+		ConfigurationSection target = section.createSection("target");
+		mTarget.save(target);
+		ConfigurationSection destination = section.createSection("dest");
+		mDestination.save(destination);
+	}
 	
 	public static TeleportAction newAction(CommandSender sender, String[] args) throws BadArgumentException, IllegalStateException
 	{

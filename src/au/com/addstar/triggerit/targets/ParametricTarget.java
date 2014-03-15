@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.Validate;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.InvalidConfigurationException;
 
 public class ParametricTarget extends Target<Object>
 {
@@ -15,6 +17,8 @@ public class ParametricTarget extends Target<Object>
 	{
 		mArgument = argument;
 	}
+	
+	protected ParametricTarget() {}
 	
 	@Override
 	public void setArgumentMap(Map<String, Object> arguments)
@@ -29,6 +33,19 @@ public class ParametricTarget extends Target<Object>
 		Validate.notNull(mArguments, "Argument map not set for ParametricTarget, use setArgumentMap()");
 		
 		return Arrays.asList(mArguments.get(mArgument));
+	}
+	
+	@Override
+	protected void load( ConfigurationSection section ) throws InvalidConfigurationException
+	{
+		mArgument = section.getString("argument");
+	}
+	
+	@Override
+	public void save( ConfigurationSection section )
+	{
+		super.save(section);
+		section.set("argument", mArgument);
 	}
 
 }

@@ -14,6 +14,7 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -29,9 +30,10 @@ import com.google.common.collect.ImmutableMap;
 import au.com.addstar.triggerit.Trigger;
 import au.com.addstar.triggerit.TriggerItPlugin;
 import au.com.addstar.triggerit.Utilities;
+import au.com.addstar.triggerit.WorldSpecific;
 import au.com.addstar.triggerit.commands.BadArgumentException;
 
-public class RedstoneTrigger extends Trigger
+public class RedstoneTrigger extends Trigger implements WorldSpecific
 {
 	// Triggers waiting to be completed
 	private static WeakHashMap<Player, RedstoneTrigger> mWaitingTriggers = new WeakHashMap<Player, RedstoneTrigger>();
@@ -143,6 +145,12 @@ public class RedstoneTrigger extends Trigger
 		return mLocation.toLocation(world);
 	}
 	
+	@Override
+	public UUID getWorld()
+	{
+		return mWorld;
+	}
+	
 	public int getThreshold()
 	{
 		return mThreshold;
@@ -185,6 +193,24 @@ public class RedstoneTrigger extends Trigger
 	public void onUnload()
 	{
 		removeTriggerAt(mWorld, mLocation, this);
+	}
+	
+	@Override
+	protected void load( ConfigurationSection section )
+	{
+		mWorld = UUID.fromString(section.getString("world"));
+		mLocation = (BlockVector)section.get("block");
+		mOnHigh = section.getBoolean("high");
+		mThreshold = section.getInt("value");
+	}
+	
+	@Override
+	protected void save( ConfigurationSection section )
+	{
+		section.set("world", mWorld.toString());
+		section.set("block", mLocation);
+		section.set("high", mOnHigh);
+		section.set("value", mThreshold);
 	}
 	
 	@Override

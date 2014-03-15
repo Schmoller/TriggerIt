@@ -62,6 +62,8 @@ public class NewTriggerCommand implements ICommand
 		TriggerManager manager = TriggerItPlugin.getInstance().getTriggerManager();
 		
 		String name = args[0];
+		if(!Utilities.isValidName(name))
+			throw new BadArgumentException(0, "The name contains invalid characters.");
 		if(manager.getTrigger(name) != null)
 			throw new BadArgumentException(0, "A trigger already exists with that name");
 		

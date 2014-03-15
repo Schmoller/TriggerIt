@@ -14,6 +14,7 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -31,9 +32,10 @@ import com.google.common.collect.ImmutableMap;
 import au.com.addstar.triggerit.Trigger;
 import au.com.addstar.triggerit.TriggerItPlugin;
 import au.com.addstar.triggerit.Utilities;
+import au.com.addstar.triggerit.WorldSpecific;
 import au.com.addstar.triggerit.commands.BadArgumentException;
 
-public class BlockTrigger extends Trigger
+public class BlockTrigger extends Trigger implements WorldSpecific
 {
 	public enum TriggerType
 	{
@@ -187,6 +189,12 @@ public class BlockTrigger extends Trigger
 	}
 	
 	@Override
+	public UUID getWorld()
+	{
+		return mWorld;
+	}
+	
+	@Override
 	public boolean isValid()
 	{
 		return mWorld != null && mLocation != null;
@@ -212,6 +220,22 @@ public class BlockTrigger extends Trigger
 
 		World world = Bukkit.getWorld(mWorld);
 		return String.format("Block trigger @(%d,%d,%d,%s) for %s", mLocation.getBlockX(), mLocation.getBlockY(), mLocation.getBlockZ(), (world != null ? world.getName() : "Unloaded"), mType.name()); 
+	}
+	
+	@Override
+	protected void load( ConfigurationSection section )
+	{
+		mType = TriggerType.valueOf(section.getString("type"));
+		mWorld = UUID.fromString(section.getString("world"));
+		mLocation = (BlockVector)section.get("block");
+	}
+	
+	@Override
+	protected void save( ConfigurationSection section )
+	{
+		section.set("block", mLocation);
+		section.set("world", mWorld.toString());
+		section.set("type", mType.name());
 	}
 	
 	public static BlockTrigger newTrigger(CommandSender sender, String name, String[] args) throws IllegalArgumentException, IllegalStateException, BadArgumentException

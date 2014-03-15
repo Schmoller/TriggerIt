@@ -79,6 +79,7 @@ public class AddActionCommand implements ICommand
 		{
 			Action action = def.newAction(sender, Arrays.copyOfRange(args, 2, args.length));
 			trigger.addAction(action);
+			triggers.saveTrigger(trigger);
 			sender.sendMessage(ChatColor.GREEN + "Action added to " + trigger.getName());
 		}
 		catch(BadArgumentException e)

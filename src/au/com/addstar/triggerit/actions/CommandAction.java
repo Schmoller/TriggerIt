@@ -7,11 +7,14 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Player;
 
 import au.com.addstar.triggerit.Action;
 import au.com.addstar.triggerit.Utilities;
 import au.com.addstar.triggerit.commands.BadArgumentException;
+import au.com.addstar.triggerit.targets.Target;
 import au.com.addstar.triggerit.targets.TargetCS;
 
 public class CommandAction implements Action
@@ -45,6 +48,21 @@ public class CommandAction implements Action
 			return String.format("%d %d %d", ((Location) argument).getX(), ((Location) argument).getY(), ((Location) argument).getZ());
 		
 		return argument.toString();
+	}
+	
+	@Override
+	public void load( ConfigurationSection section ) throws InvalidConfigurationException
+	{
+		mCommand = section.getString("command");
+		mExecutor = (TargetCS)Target.loadTarget(section.getConfigurationSection("target"));
+	}
+	
+	@Override
+	public void save( ConfigurationSection section )
+	{
+		section.set("command", mCommand);
+		ConfigurationSection target = section.createSection("target");
+		mExecutor.save(target);
 	}
 	
 	public static CommandAction newAction(CommandSender sender, String[] args) throws IllegalArgumentException, IllegalStateException, BadArgumentException

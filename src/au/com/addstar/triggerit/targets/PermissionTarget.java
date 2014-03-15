@@ -6,6 +6,8 @@ import java.util.Set;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permissible;
 
@@ -19,6 +21,8 @@ public class PermissionTarget extends TargetCS
 		mPermission = perm;
 		mInvert = invert;
 	}
+	
+	protected PermissionTarget() {}
 	
 	@Override
 	public List<? extends CommandSender> getTargets()
@@ -50,4 +54,18 @@ public class PermissionTarget extends TargetCS
 		}
 	}
 
+	@Override
+	protected void load( ConfigurationSection section ) throws InvalidConfigurationException
+	{
+		mPermission = section.getString("perm");
+		mInvert = section.getBoolean("invert");
+	}
+	
+	@Override
+	public void save( ConfigurationSection section )
+	{
+		super.save(section);
+		section.set("perm", mPermission);
+		section.set("invert", mInvert);
+	}
 }

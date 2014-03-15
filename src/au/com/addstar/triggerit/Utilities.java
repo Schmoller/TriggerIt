@@ -43,4 +43,12 @@ public class Utilities
 		
 		return buffer.toString();
 	}
+	
+	private static Pattern mValidNameChars = Pattern.compile("[a-zA-Z0-9_\\-]+");
+	
+	public static boolean isValidName(String name)
+	{
+		Matcher m = mValidNameChars.matcher(name);
+		return m.matches();
+	}
 }

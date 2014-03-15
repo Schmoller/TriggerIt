@@ -1,5 +1,7 @@
 package au.com.addstar.triggerit;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -7,20 +9,31 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.apache.commons.lang.Validate;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.event.world.WorldLoadEvent;
+import org.bukkit.event.world.WorldUnloadEvent;
 
 import com.google.common.base.Throwables;
 import com.google.common.collect.HashMultimap;
 
 import au.com.addstar.triggerit.commands.BadArgumentException;
 
-public class TriggerManager
+public class TriggerManager implements Listener
 {
 	private HashMap<String, TriggerDefinition> mDefinitions = new HashMap<String, TriggerDefinition>();
+	private HashMap<Class<? extends Trigger>, String> mReverseDefinitions = new HashMap<Class<? extends Trigger>, String>();
 	private ArrayList<String> mTypeNames = new ArrayList<String>();
+	
+	private File mFolder;
 	
 	public void registerTriggerType(String type, Class<? extends Trigger> typeClass) throws IllegalArgumentException
 	{
@@ -31,11 +44,14 @@ public class TriggerManager
 			throw new IllegalArgumentException("Duplicate type name found");
 		
 		mDefinitions.put(type.toLowerCase(), new TriggerDefinition(typeClass));
+		mReverseDefinitions.put(typeClass, type);
 		mTypeNames.add(type);
 	}
 	
 	public void initializeAll(TriggerItPlugin plugin)
 	{
+		mFolder = plugin.getDataFolder();
+		
 		for(TriggerDefinition def : mDefinitions.values())
 			def.initialize(plugin);
 	}
@@ -59,8 +75,19 @@ public class TriggerManager
 		
 		if(trigger.isValid())
 		{
-			// TODO: Way to get world for those that have it
-			mAllTriggers.put(null, trigger);
+			internalAddTrigger(trigger);
+			saveTrigger(trigger);
+		}
+	}
+	
+	private void internalAddTrigger(Trigger trigger)
+	{
+		if(trigger.isValid())
+		{
+			if(trigger instanceof WorldSpecific)
+				mAllTriggers.put(((WorldSpecific)trigger).getWorld(), trigger);
+			else
+				mAllTriggers.put(null, trigger);
 			mNamedTriggers.put(trigger.getName().toLowerCase(), trigger);
 			trigger.onLoad();
 		}
@@ -80,6 +107,130 @@ public class TriggerManager
 	public Trigger getTrigger(String name)
 	{
 		return mNamedTriggers.get(name.toLowerCase());
+	}
+	
+	public void saveTrigger(Trigger trigger)
+	{
+		Validate.isTrue(trigger.isValid());
+		
+		String typeName = mReverseDefinitions.get(trigger.getClass());
+		Validate.notNull(typeName, "Trigger type is not registered");
+		
+		File file = null;
+		
+		if(trigger instanceof WorldSpecific)
+		{
+			UUID world = ((WorldSpecific)trigger).getWorld();
+			
+			if(world != null)
+				file = new File(mFolder, world.toString());
+		}
+		if(file == null)
+			file = new File(mFolder, "global");
+
+		file.mkdirs();
+		
+		file = new File(file, trigger.getName() + ".yml");
+		YamlConfiguration config = new YamlConfiguration();
+		trigger.write(config);
+		config.set("type", typeName);
+		
+		try
+		{
+			config.save(file);
+		}
+		catch(IOException e)
+		{
+			System.err.println("Failed to save trigger " + trigger.getName());
+			e.printStackTrace();
+		}
+	}
+	
+	public void loadAll(UUID world)
+	{
+		Set<Trigger> triggers = mAllTriggers.get(world);
+		for(Trigger t : triggers)
+			t.onUnload();
+		
+		mAllTriggers.removeAll(world);
+		
+		File folder = null;
+		
+		if(world != null)
+			folder = new File(mFolder, world.toString().replace(':', '-'));
+		else
+			folder = new File(mFolder, "global");
+		
+		if(!folder.exists())
+			return;
+		
+		for(File file : folder.listFiles())
+		{
+			if(!file.getName().endsWith(".yml"))
+				continue;
+			
+			Trigger trigger = loadTrigger(file);
+			if(trigger != null)
+				internalAddTrigger(trigger);
+		}
+	}
+	
+	private Trigger loadTrigger(File file)
+	{
+		if(!file.exists())
+			return null;
+		
+		YamlConfiguration config = new YamlConfiguration();
+		try
+		{
+			config.load(file);
+			String type = config.getString("type");
+			
+			TriggerDefinition def = getType(type);
+			if(def == null)
+				throw new InvalidConfigurationException("Cannot find trigger type " + type);
+			
+			Trigger trigger = def.newBlankTrigger();
+			trigger.read(config);
+			return trigger;
+		}
+		catch(InvalidConfigurationException e)
+		{
+			TriggerItPlugin.getInstance().getLogger().severe("Failed to load trigger " + file.getName() + ":");
+			TriggerItPlugin.getInstance().getLogger().severe(e.getMessage());
+			return null;
+		}
+		catch ( IOException e )
+		{
+			TriggerItPlugin.getInstance().getLogger().severe("Failed to load trigger " + file.getName() + ":");
+			TriggerItPlugin.getInstance().getLogger().severe(e.getMessage());
+			return null;
+		}
+	}
+	
+	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
+	private void onWorldLoad(WorldLoadEvent event)
+	{
+		loadAll(event.getWorld().getUID());
+	}
+	
+	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
+	private void onWorldUnload(WorldUnloadEvent event)
+	{
+		UUID world = event.getWorld().getUID();
+		Set<Trigger> triggers = mAllTriggers.get(world);
+		for(Trigger t : triggers)
+			t.onUnload();
+		
+		mAllTriggers.removeAll(world);
+	}
+	
+	public void unloadAll()
+	{
+		for(Trigger trigger : mAllTriggers.values())
+			trigger.onUnload();
+		
+		mAllTriggers.clear();
 	}
 	
 	public static class TriggerDefinition

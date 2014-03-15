@@ -13,15 +13,17 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.scheduler.BukkitTask;
 
 import com.google.common.collect.ImmutableMap;
 
 import au.com.addstar.triggerit.Trigger;
 import au.com.addstar.triggerit.TriggerItPlugin;
+import au.com.addstar.triggerit.WorldSpecific;
 import au.com.addstar.triggerit.commands.BadArgumentException;
 
-public class TimeTrigger extends Trigger
+public class TimeTrigger extends Trigger implements WorldSpecific
 {
 	private static List<TimeTrigger> mTriggers = new ArrayList<TimeTrigger>();
 	private static TimeWatcher mWatcher;
@@ -43,6 +45,12 @@ public class TimeTrigger extends Trigger
 	}
 	
 	@Override
+	public UUID getWorld()
+	{
+		return mWorld;
+	}
+	
+	@Override
 	public void onLoad()
 	{
 		mTriggers.add(this);
@@ -55,6 +63,22 @@ public class TimeTrigger extends Trigger
 		mTriggers.remove(this);
 		if(mTriggers.isEmpty())
 			mWatcher.stop();
+	}
+	
+	@Override
+	protected void load( ConfigurationSection section )
+	{
+		mTime = section.getInt("time");
+		if(section.isString("world"))
+			mWorld = UUID.fromString(section.getString("world"));
+	}
+	
+	@Override
+	protected void save( ConfigurationSection section )
+	{
+		section.set("time", mTime);
+		if(mWorld != null)
+			section.set("world", mWorld.toString());
 	}
 	
 	private static Pattern mTimePattern = Pattern.compile("([\\d]+)ticks|(\\d{2}:\\d{2})|(\\d{1,2}(?::\\d{1,2})?)(am|pm)");

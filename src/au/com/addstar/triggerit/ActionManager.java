@@ -18,6 +18,7 @@ import com.google.common.base.Throwables;
 public class ActionManager
 {
 	private HashMap<String, ActionDefinition> mDefinitions = new HashMap<String, ActionDefinition>();
+	private HashMap<Class<? extends Action>, String> mReverseDefinitions = new HashMap<Class<? extends Action>, String>();
 	private ArrayList<String> mTypeNames = new ArrayList<String>();
 	
 	public void registerActionType(String type, Class<? extends Action> typeClass) throws IllegalArgumentException
@@ -29,6 +30,7 @@ public class ActionManager
 			throw new IllegalArgumentException("Duplicate type name found");
 		
 		mDefinitions.put(type.toLowerCase(), new ActionDefinition(typeClass));
+		mReverseDefinitions.put(typeClass, type.toLowerCase());
 		mTypeNames.add(type);
 	}
 	
@@ -40,6 +42,14 @@ public class ActionManager
 	public ActionDefinition getType(String type)
 	{
 		return mDefinitions.get(type.toLowerCase());
+	}
+	
+	public String getTypeFrom(Action action)
+	{
+		String type = mReverseDefinitions.get(action.getClass());
+		if(type == null)
+			throw new IllegalArgumentException("Action class " + action.getClass().getName() + " has not been registered!");
+		return type;
 	}
 	
 	public static class ActionDefinition
@@ -80,7 +90,7 @@ public class ActionManager
 			}
 		}
 		
-		public Action newBlankTrigger()
+		public Action newBlankAction()
 		{
 			try
 			{

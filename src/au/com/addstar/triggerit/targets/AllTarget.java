@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Player;
 
 public class AllTarget extends TargetCS
@@ -15,6 +17,8 @@ public class AllTarget extends TargetCS
 	{
 		mConsole = console;
 	}
+	
+	protected AllTarget() {}
 	
 	@Override
 	public List<? extends CommandSender> getTargets()
@@ -30,4 +34,16 @@ public class AllTarget extends TargetCS
 		return senders;
 	}
 
+	@Override
+	protected void load( ConfigurationSection section ) throws InvalidConfigurationException
+	{
+		mConsole = section.getBoolean("console");
+	}
+	
+	@Override
+	public void save( ConfigurationSection section )
+	{
+		super.save(section);
+		section.set("console", mConsole);
+	}
 }

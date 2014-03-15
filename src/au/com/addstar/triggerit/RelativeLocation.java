@@ -1,11 +1,17 @@
 package au.com.addstar.triggerit;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
 
 import au.com.addstar.triggerit.commands.BadArgumentException;
 
-public class RelativeLocation extends Location
+public class RelativeLocation extends Location implements ConfigurationSerializable
 {
 	private boolean mRelX;
 	private boolean mRelY;
@@ -334,5 +340,38 @@ public class RelativeLocation extends Location
 			return mRelSource.getWorld();
 		
 		return super.getWorld();
+	}
+
+	@Override
+	public Map<String, Object> serialize()
+	{
+		HashMap<String, Object> map = new HashMap<String, Object>();
+		map.put("x", super.getX());
+		map.put("y", super.getY());
+		map.put("z", super.getZ());
+		
+		map.put("rx", mRelX);
+		map.put("ry", mRelY);
+		map.put("rz", mRelZ);
+		
+		map.put("yaw", super.getYaw());
+		map.put("pitch", super.getPitch());
+		
+		map.put("ryaw", mRelYaw);
+		map.put("rpitch", mRelPitch);
+		
+		if(super.getWorld() != null)
+			map.put("world", super.getWorld().getUID().toString());
+		
+		return map;
+	}
+	
+	public static RelativeLocation deserialize(Map<String, Object> map)
+	{
+		World world = null;
+		if(map.containsKey("world"))
+			world = Bukkit.getWorld(UUID.fromString((String)map.get("world")));
+		
+		return new RelativeLocation(world, (Double)map.get("x"), (Boolean)map.get("rx"), (Double)map.get("y"), (Boolean)map.get("ry"), (Double)map.get("z"), (Boolean)map.get("rz"), (float)(double)(Double)map.get("yaw"), (Boolean)map.get("ryaw"), (float)(double)(Double)map.get("pitch"), (Boolean)map.get("rpitch"));
 	}
 }
