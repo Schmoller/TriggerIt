@@ -46,7 +46,7 @@ public class ActionCommand extends CommandDispatcher implements ICommand
 	@Override
 	public String getDescription()
 	{
-		return null;
+		return "Allows you to add, remove, and change actions on triggers";
 	}
 
 	@Override

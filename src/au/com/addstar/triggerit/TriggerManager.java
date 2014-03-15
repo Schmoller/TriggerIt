@@ -6,6 +6,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -66,6 +67,11 @@ public class TriggerManager implements Listener
 		return mDefinitions.get(type.toLowerCase());
 	}
 	
+	public String getTypeName(Trigger trigger)
+	{
+		return mReverseDefinitions.get(trigger.getClass());
+	}
+	
 	private HashMultimap<UUID, Trigger> mAllTriggers = HashMultimap.create();
 	private HashMap<String, Trigger> mNamedTriggers = new HashMap<String, Trigger>();
 
@@ -107,6 +113,11 @@ public class TriggerManager implements Listener
 	public Trigger getTrigger(String name)
 	{
 		return mNamedTriggers.get(name.toLowerCase());
+	}
+	
+	public Collection<Trigger> getTriggers()
+	{
+		return Collections.unmodifiableCollection(mAllTriggers.values());
 	}
 	
 	public void saveTrigger(Trigger trigger)
