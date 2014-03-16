@@ -3,6 +3,7 @@ package au.com.addstar.triggerit.commands.triggers;
 import java.util.EnumSet;
 import java.util.List;
 
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
 import au.com.addstar.triggerit.Trigger;
@@ -63,6 +64,14 @@ public class TriggerConditionCommand implements ICommand
 		if(trigger == null)
 			throw new BadArgumentException(0, "Unknown trigger");
 		
+		if(args.length == 1)
+		{
+			trigger.setCondition(null);
+			
+			sender.sendMessage(ChatColor.YELLOW + "Trigger condition cleared for " + trigger.getName());
+			return true;
+		}
+		
 		String condition = "";
 		for(int i = 1; i < args.length; ++i)
 		{
@@ -72,7 +81,12 @@ public class TriggerConditionCommand implements ICommand
 		}
 		
 		Condition cond = Condition.parse(condition);
-		sender.sendMessage(cond.toString());
+		
+		trigger.setCondition(cond);
+		manager.saveTrigger(trigger);
+		
+		sender.sendMessage(ChatColor.GREEN + "Set trigger " + trigger.getName() + "'s trigger condition to:");
+		sender.sendMessage(ChatColor.GRAY + cond.toString());
 		
 		return true;
 	}

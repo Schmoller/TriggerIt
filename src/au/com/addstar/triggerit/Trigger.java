@@ -9,6 +9,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 
 import au.com.addstar.triggerit.ActionManager.ActionDefinition;
+import au.com.addstar.triggerit.conditions.Condition;
 
 /**
  * Represents a trigger object.<br/>
@@ -32,6 +33,7 @@ public abstract class Trigger
 	private boolean mIsEnabled = true;
 	private ArrayList<Action> mActions = new ArrayList<Action>();
 	private String mName;
+	private Condition mCondition;
 	
 	public Trigger() {}
 	
@@ -67,6 +69,16 @@ public abstract class Trigger
 		mActions.clear();
 	}
 	
+	public Condition getCondition()
+	{
+		return mCondition;
+	}
+	
+	public void setCondition(Condition condition)
+	{
+		mCondition = condition;
+	}
+	
 	/**
 	 * Trigger this trigger with the supplied arguments
 	 * 
@@ -74,6 +86,12 @@ public abstract class Trigger
 	 */
 	public final void trigger(Map<String, Object> arguments)
 	{
+		if(!mIsEnabled)
+			return;
+		
+		if(mCondition != null && !mCondition.isTrue(arguments))
+			return;
+		
 		System.out.println("Trigger " + toString() + " triggered");
 		Validate.notNull(arguments);
 		for(Action action : mActions)
@@ -106,6 +124,9 @@ public abstract class Trigger
 			
 			act.set("type", manager.getTypeFrom(mActions.get(i)));
 		}
+		
+		if(mCondition != null)
+			section.set("condition", mCondition.toString());
 	}
 	
 	public void read(ConfigurationSection section) throws InvalidConfigurationException
@@ -134,6 +155,9 @@ public abstract class Trigger
 			action.load(act);
 			mActions.add(action);
 		}
+		
+		if(section.isString("condition"))
+			mCondition = Condition.parse(section.getString("condition"));
 	}
 	
 	protected abstract void save(ConfigurationSection section);
@@ -144,6 +168,8 @@ public abstract class Trigger
 		ArrayList<String> lines = new ArrayList<String>();
 		lines.add(String.format("&6Trigger Info: &f%s", mName));
 		lines.add(String.format(" &7Type: &e%s", TriggerItPlugin.getInstance().getTriggerManager().getTypeName(this)));
+		if(mCondition != null)
+			lines.add(String.format(" &7Condition: &e%s", mCondition.toString()));
 		String[] desc = describeTrigger();
 		for(String line : desc)
 			lines.add(String.format(" %s", line));

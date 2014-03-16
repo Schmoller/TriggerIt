@@ -110,12 +110,20 @@ public abstract class Condition
 		return -1;
 	}
 	
+	@SuppressWarnings( "unchecked" )
 	public static Condition parse(String condition) throws IllegalArgumentException
 	{
 		List<Object>[] tokenObjects = tokenize(condition.toLowerCase(), 0);
 		List<Object> tokens = tokenObjects[0];
 		List<Object> locations = tokenObjects[1];
 
+		// If you put parenthesis around the entire thing, this happens
+		if(tokens.size() == 1 && tokens.get(0) instanceof List)
+		{
+			tokens = (List<Object>)tokens.get(0);
+			locations = (List<Object>)locations.get(0);
+		}
+		
 		try
 		{
 			return parseCondition(tokens);
@@ -271,7 +279,7 @@ public abstract class Condition
 		}
 		
 		if(!left.startsWith("@"))
-			throw new ConditionParseException(0, false, "Expected argument '" + left + "'to start with @");
+			throw new ConditionParseException(0, false, "Expected argument '" + left + "' to start with @");
 		
 		left = left.substring(1);
 		
