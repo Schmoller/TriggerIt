@@ -74,42 +74,51 @@ public class MinigameTrigger extends Trigger
 	@Override
 	protected void save( ConfigurationSection section )
 	{
-		section.set("minigame", mMinigame);
+		if(mMinigame != null)
+			section.set("minigame", mMinigame);
+		
 		section.set("mgtype", mType.name());
 	}
 
 	@Override
 	protected void load( ConfigurationSection section ) throws InvalidConfigurationException
 	{
-		mMinigame = section.getString("minigame");
+		if(section.isString("minigame"))
+			mMinigame = section.getString("minigame").toLowerCase();
+		else
+			mMinigame = null;
+		
 		mType = TriggerType.valueOf(section.getString("mgtype"));
 	}
 
 	@Override
 	protected String[] describeTrigger()
 	{
-		return null;
+		return new String[] {
+			ChatColor.GRAY + "Minigame: " + ChatColor.YELLOW + (mMinigame == null ? "Any Minigame" : mMinigame),
+			ChatColor.GRAY + "Trigger Type: " + ChatColor.YELLOW + mType.name()
+		};
 	}
 	
 	@Override
 	public void onLoad()
 	{
-		mTriggers.put(mMinigame.toLowerCase(), this);
+		mTriggers.put(mMinigame, this);
 	}
 	
 	@Override
 	public void onUnload()
 	{
-		mTriggers.remove(mMinigame.toLowerCase(), this);
+		mTriggers.remove(mMinigame, this);
 	}
 	
 	public static MinigameTrigger newTrigger(CommandSender sender, String name, String[] args) throws BadArgumentException, IllegalStateException
 	{
 		if(args.length != 2)
-			throw new IllegalStateException("<minigame> <type>");
+			throw new IllegalStateException("(<minigame>|*) <type>");
 		
 		Minigame minigame = Minigames.plugin.mdata.getMinigame(args[0]);
-		if(minigame == null)
+		if(minigame == null && !args[0].equals("*"))
 			throw new BadArgumentException(0, "Unknown minigame");
 		
 		TriggerType type = null;
@@ -127,10 +136,10 @@ public class MinigameTrigger extends Trigger
 			throw new BadArgumentException(1, "Unknown minigame trigger type");
 		
 		MinigameTrigger trigger = new MinigameTrigger(name);
-		trigger.mMinigame = minigame.getName();
+		trigger.mMinigame = (minigame == null ? null : minigame.getName().toLowerCase());
 		trigger.mType = type;
 		
-		sender.sendMessage(ChatColor.GREEN + "Created a new Minigame Trigger on " + type.name() + " for " + minigame.getName());
+		sender.sendMessage(ChatColor.GREEN + "Created a new Minigame Trigger on " + type.name() + " for " + (minigame == null ? "any minigame" : minigame.getName()));
 		
 		return trigger;
 	}
@@ -168,6 +177,14 @@ public class MinigameTrigger extends Trigger
 				if(trigger.mType == TriggerType.Join)
 					trigger.trigger(map);
 			}
+			
+			triggers = mTriggers.get(null);
+			
+			for(MinigameTrigger trigger : triggers)
+			{
+				if(trigger.mType == TriggerType.Join)
+					trigger.trigger(map);
+			}
 		}
 		
 		@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
@@ -188,6 +205,14 @@ public class MinigameTrigger extends Trigger
 				.put("losers", losers)
 				.put("minigame", event.getMinigame().getName())
 				.build();
+			
+			for(MinigameTrigger trigger : triggers)
+			{
+				if(trigger.mType == TriggerType.Win)
+					trigger.trigger(map);
+			}
+			
+			triggers = mTriggers.get(null);
 			
 			for(MinigameTrigger trigger : triggers)
 			{
@@ -221,6 +246,14 @@ public class MinigameTrigger extends Trigger
 				if(trigger.mType == TriggerType.TeamWin)
 					trigger.trigger(map);
 			}
+			
+			triggers = mTriggers.get(null);
+			
+			for(MinigameTrigger trigger : triggers)
+			{
+				if(trigger.mType == TriggerType.TeamWin)
+					trigger.trigger(map);
+			}
 		}
 		
 		@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
@@ -234,6 +267,14 @@ public class MinigameTrigger extends Trigger
 				.put("world", event.getPlayer().getWorld())
 				.put("minigame", event.getMinigame().getName())
 				.build();
+			
+			for(MinigameTrigger trigger : triggers)
+			{
+				if(trigger.mType == TriggerType.Quit)
+					trigger.trigger(map);
+			}
+			
+			triggers = mTriggers.get(null);
 			
 			for(MinigameTrigger trigger : triggers)
 			{
@@ -260,7 +301,15 @@ public class MinigameTrigger extends Trigger
 			
 			for(MinigameTrigger trigger : triggers)
 			{
-				if(trigger.mType == TriggerType.Join)
+				if(trigger.mType == TriggerType.Revert)
+					trigger.trigger(map);
+			}
+			
+			triggers = mTriggers.get(null);
+			
+			for(MinigameTrigger trigger : triggers)
+			{
+				if(trigger.mType == TriggerType.Revert)
 					trigger.trigger(map);
 			}
 		}
@@ -280,6 +329,14 @@ public class MinigameTrigger extends Trigger
 				.put("world", event.getPlayer().getWorld())
 				.put("minigame", event.getMinigame().getName())
 				.build();
+			
+			for(MinigameTrigger trigger : triggers)
+			{
+				if(trigger.mType == TriggerType.Spectate)
+					trigger.trigger(map);
+			}
+			
+			triggers = mTriggers.get(null);
 			
 			for(MinigameTrigger trigger : triggers)
 			{
