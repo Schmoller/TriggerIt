@@ -9,6 +9,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import au.com.addstar.triggerit.Action;
 import au.com.addstar.triggerit.BasicTextifier;
+import au.com.addstar.triggerit.StringWithPlaceholders;
 import au.com.addstar.triggerit.Utilities;
 import au.com.addstar.triggerit.commands.BadArgumentException;
 import au.com.addstar.triggerit.targets.Target;
@@ -23,10 +24,22 @@ public class MessageAction implements Action
 	public void execute( Map<String, Object> arguments )
 	{
 		mTarget.setArgumentMap(arguments);
-		String message = Utilities.replaceArguments(mMessage, arguments, BasicTextifier.instance);
+		String messagePre = Utilities.replaceArguments(mMessage, arguments, BasicTextifier.instance);
+		StringWithPlaceholders message = StringWithPlaceholders.from(messagePre, arguments, BasicTextifier.instance);
 		
-		for(CommandSender target : mTarget.getTargets())
-			target.sendMessage(message);
+		if(message != null)
+		{
+			for(String messagePost : message)
+			{
+				for(CommandSender target : mTarget.getTargets())
+					target.sendMessage(messagePost);
+			}
+		}
+		else
+		{
+			for(CommandSender target : mTarget.getTargets())
+				target.sendMessage(messagePre);
+		}
 	}
 	
 	@Override
