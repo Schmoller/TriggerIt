@@ -8,6 +8,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import au.com.addstar.triggerit.Action;
+import au.com.addstar.triggerit.BasicArgumentProvider;
 import au.com.addstar.triggerit.BasicTextifier;
 import au.com.addstar.triggerit.StringWithPlaceholders;
 import au.com.addstar.triggerit.Utilities;
@@ -29,8 +30,8 @@ public class CommandAction implements Action
 	{
 		mExecutor.setArgumentMap(arguments);
 		
-		String commandPre = Utilities.replaceArguments(mCommand, arguments, BasicTextifier.instance);
-		StringWithPlaceholders command = StringWithPlaceholders.from(commandPre, arguments, BasicTextifier.instance);
+		String commandPre = Utilities.replaceArguments(mCommand, arguments, BasicArgumentProvider.instance, BasicTextifier.instance);
+		StringWithPlaceholders command = StringWithPlaceholders.from(commandPre, arguments, BasicArgumentProvider.instance, BasicTextifier.instance);
 		
 		if(command != null)
 		{

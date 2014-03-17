@@ -27,19 +27,43 @@ public class StringWithPlaceholders implements Iterable<String>
 		return new PlaceholderIterator();
 	}
 	
-	private static Pattern mPattern = Pattern.compile("@\\[([a-zA-Z0-9_]+)\\]");
-	public static StringWithPlaceholders from(String string, Map<String, Object> arguments, ITextifier textifier)
+	private static Pattern mPattern = Pattern.compile("@\\[([a-zA-Z0-9_]+(?:\\.[a-zA-Z0-9_]+)*)\\]");
+	public static StringWithPlaceholders from(String string, Map<String, Object> arguments, ArgumentProvider provider, ITextifier textifier)
 	{
 		ArrayList<Placeholder> placeholders = new ArrayList<Placeholder>();
 		Matcher m = mPattern.matcher(string);
 		
 		while(m.find())
 		{
-			String arg = m.group(1);
-			Object val = arguments.get(arg);
-			if(val instanceof Collection<?>)
+			String[] parts = m.group(1).split("\\.");
+			Object obj = arguments.get(parts[0]);
+			
+			if(obj instanceof Collection<?>)
 			{
-				List<? extends Object> results = new ArrayList<Object>((Collection<?>)val);
+				List<Object> results = new ArrayList<Object>((Collection<?>)obj);
+				
+				nextItem: for(int o = 0; o < results.size(); ++o)
+				{
+					Object sub = results.get(o);
+					
+					for(int i = 1; i < parts.length; ++i)
+					{
+						Map<String, Object> args = provider.provide(sub);
+						if(args != null)
+							sub = args.get(parts[i]);
+						else
+							sub = null;
+						
+						if(sub == null)
+						{
+							results.remove(o);
+							--o;
+							continue nextItem;
+						}
+					}
+					
+					results.set(o, sub);
+				}
 				
 				if(!results.isEmpty())
 					placeholders.add(new Placeholder(m.start(), m.end(), results));
