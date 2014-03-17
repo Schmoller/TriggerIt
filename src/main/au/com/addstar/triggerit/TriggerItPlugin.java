@@ -75,6 +75,7 @@ public class TriggerItPlugin extends JavaPlugin
 		mTriggers.registerTriggerType("Custom", CustomTrigger.class);
 		mTriggers.registerTriggerType("Redstone", RedstoneTrigger.class);
 		mTriggers.registerTriggerType("Time", TimeTrigger.class);
+		mTriggers.registerTriggerType("World", WorldTrigger.class);
 		
 		if(Bukkit.getPluginManager().isPluginEnabled("WorldGuard"))
 			mTriggers.registerTriggerType("Region", RegionTrigger.class);

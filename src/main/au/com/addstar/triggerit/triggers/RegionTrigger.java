@@ -154,6 +154,7 @@ public class RegionTrigger extends Trigger implements WorldSpecific
 	{
 		mWorld = UUID.fromString(section.getString("world"));
 		mRegionId = section.getString("region");
+		mType = RegionTriggerType.valueOf(section.getString("triggertype"));
 	}
 	
 	@Override
@@ -161,6 +162,7 @@ public class RegionTrigger extends Trigger implements WorldSpecific
 	{
 		section.set("world", mWorld.toString());
 		section.set("region", mRegionId);
+		section.set("triggertype", mType.name());
 	}
 	
 	@Override
