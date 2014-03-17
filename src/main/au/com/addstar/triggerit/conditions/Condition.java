@@ -14,7 +14,7 @@ public abstract class Condition
 	
 	private static int getCharType(char c)
 	{
-		if(Character.isLetter(c) || Character.isDigit(c) || c == '@' || c == '_')
+		if(Character.isLetter(c) || Character.isDigit(c) || c == '@' || c == '_' || c == '.')
 			return 0;
 		else
 			return 1;
@@ -290,6 +290,14 @@ public abstract class Condition
 				operator = Operator.Equals;
 			else if(op.equals("!="))
 				operator = Operator.NotEquals;
+			else if(op.equals("<"))
+				operator = Operator.Less;
+			else if(op.equals(">"))
+				operator = Operator.Greater;
+			else if(op.equals("<="))
+				operator = Operator.LessEqual;
+			else if(op.equals(">="))
+				operator = Operator.GreaterEqual;
 			else
 				throw new ConditionParseException(1, false, "Unknown operator " + op);
 		}

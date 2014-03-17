@@ -25,6 +25,31 @@ public class Utilities
 	
 	private static Pattern mPattern = Pattern.compile("(@@)|@([a-zA-Z0-9_]+(?:\\.[a-zA-Z0-9_]+)*)");
 	
+	public static Object getArgument(String name, Map<String, Object> arguments, ArgumentProvider provider)
+	{
+		String[] parts = name.split("\\.");
+		
+		Object obj = null;
+		for(int i = 0; i < parts.length; ++i)
+		{
+			if(i == 0)
+				obj = arguments.get(parts[i]);
+			else
+			{
+				Map<String, Object> args = provider.provide(obj);
+				if(args != null)
+					obj = args.get(parts[i]);
+				else
+					obj = null;
+			}
+			
+			if(obj == null)
+				break;
+		}
+		
+		return obj;
+	}
+	
 	public static String replaceArguments(String str, Map<String, Object> arguments, ArgumentProvider provider, ITextifier textifier)
 	{
 		Matcher match = mPattern.matcher(str);
@@ -36,25 +61,7 @@ public class Utilities
 				match.appendReplacement(buffer, "@");
 			else
 			{
-				String[] parts = match.group(2).split("\\.");
-				
-				Object obj = null;
-				for(int i = 0; i < parts.length; ++i)
-				{
-					if(i == 0)
-						obj = arguments.get(parts[i]);
-					else
-					{
-						Map<String, Object> args = provider.provide(obj);
-						if(args != null)
-							obj = args.get(parts[i]);
-						else
-							obj = null;
-					}
-					
-					if(obj == null)
-						break;
-				}
+				Object obj = getArgument(match.group(2), arguments, provider);
 					
 				if(textifier != null && obj != null)
 					obj = textifier.asString(obj);
