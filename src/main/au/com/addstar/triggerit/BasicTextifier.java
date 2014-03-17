@@ -26,7 +26,6 @@ public class BasicTextifier implements ITextifier
 		else if(obj instanceof Collection)
 		{
 			StringBuilder out = new StringBuilder();
-			out.append('[');
 			
 			boolean first = true;
 			for(Object o2 : (Collection)obj)
@@ -36,8 +35,6 @@ public class BasicTextifier implements ITextifier
 				first = false;
 				out.append(asString(o2));
 			}
-			
-			out.append(']');
 			
 			return out.toString();
 		}

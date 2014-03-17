@@ -23,7 +23,7 @@ public class Utilities
 		return matches;
 	}
 	
-	private static Pattern mPattern = Pattern.compile("@\\[([a-zA-Z0-9_]+)\\]");
+	private static Pattern mPattern = Pattern.compile("(@@)|@([a-zA-Z0-9_]+)");
 	
 	public static String replaceArguments(String str, Map<String, Object> arguments, ITextifier textifier)
 	{
@@ -32,11 +32,16 @@ public class Utilities
 		StringBuffer buffer = new StringBuffer();
 		while(match.find())
 		{
-			Object obj = arguments.get(match.group(1));
-			if(textifier != null && obj != null)
-				obj = textifier.asString(obj);
-			
-			match.appendReplacement(buffer, (obj != null ? obj.toString() : match.group(0)));
+			if(match.group(1) != null)
+				match.appendReplacement(buffer, "@");
+			else
+			{
+				Object obj = arguments.get(match.group(2));
+				if(textifier != null && obj != null)
+					obj = textifier.asString(obj);
+				
+				match.appendReplacement(buffer, (obj != null ? obj.toString() : match.group(0)));
+			}
 		}
 		
 		match.appendTail(buffer);
