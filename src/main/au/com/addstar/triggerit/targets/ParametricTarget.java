@@ -1,6 +1,8 @@
 package au.com.addstar.triggerit.targets;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -32,7 +34,12 @@ public class ParametricTarget extends Target<Object>
 	{
 		Validate.notNull(mArguments, "Argument map not set for ParametricTarget, use setArgumentMap()");
 		
-		return Arrays.asList(mArguments.get(mArgument));
+		Object obj = mArguments.get(mArgument);
+		
+		if(obj instanceof Collection<?>)
+			return new ArrayList<Object>((Collection<?>)obj);
+		
+		return Arrays.asList(obj);
 	}
 	
 	@Override

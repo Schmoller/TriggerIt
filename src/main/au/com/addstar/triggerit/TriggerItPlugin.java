@@ -9,6 +9,7 @@ import au.com.addstar.triggerit.actions.MessageAction;
 import au.com.addstar.triggerit.actions.SoundAction;
 import au.com.addstar.triggerit.actions.TeleportAction;
 import au.com.addstar.triggerit.commands.triggers.TriggerCommand;
+import au.com.addstar.triggerit.minigames.MinigamesExtension;
 import au.com.addstar.triggerit.triggers.*;
 
 public class TriggerItPlugin extends JavaPlugin
@@ -42,14 +43,15 @@ public class TriggerItPlugin extends JavaPlugin
 		registerTriggers();
 		registerActions();
 		registerCommands();
-		
-		mTriggers.initializeAll(this);
+		loadCompatibiliy();
 		
 		Bukkit.getScheduler().runTask(this, new Runnable()
 		{
 			@Override
 			public void run()
 			{
+				mTriggers.initializeAll(TriggerItPlugin.this);
+				
 				for(World world : Bukkit.getWorlds())
 					mTriggers.loadAll(world.getUID());
 				
@@ -90,5 +92,11 @@ public class TriggerItPlugin extends JavaPlugin
 	{
 		TriggerCommand trigger = new TriggerCommand();
 		trigger.registerAs(getCommand("trigger"));
+	}
+	
+	private void loadCompatibiliy()
+	{
+		if(Bukkit.getPluginManager().isPluginEnabled("Minigames"))
+			MinigamesExtension.load();
 	}
 }

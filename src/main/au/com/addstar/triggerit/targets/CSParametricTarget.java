@@ -1,6 +1,8 @@
 package au.com.addstar.triggerit.targets;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +31,7 @@ public class CSParametricTarget extends TargetCS
 	}
 	
 	
+	@SuppressWarnings( "unchecked" )
 	@Override
 	public List<? extends CommandSender> getTargets()
 	{
@@ -38,6 +41,16 @@ public class CSParametricTarget extends TargetCS
 		
 		if(argument instanceof CommandSender)
 			return Arrays.asList((CommandSender)argument);
+		else if(argument instanceof Collection<?>)
+		{
+			Collection<?> col = (Collection<?>)argument;
+			if(!col.isEmpty())
+			{
+				Object ent1 = col.iterator().next();
+				if(ent1 instanceof CommandSender)
+					return new ArrayList<CommandSender>((Collection<? extends CommandSender>)col);
+			}
+		}
 		
 		return Collections.emptyList();
 	}
