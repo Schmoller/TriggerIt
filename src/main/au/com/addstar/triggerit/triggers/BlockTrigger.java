@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.WeakHashMap;
@@ -11,10 +12,13 @@ import java.util.WeakHashMap;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -23,8 +27,14 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityInteractEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.material.Button;
+import org.bukkit.material.Lever;
+import org.bukkit.material.MaterialData;
+import org.bukkit.material.PressurePlate;
+import org.bukkit.material.TripwireHook;
 import org.bukkit.util.BlockVector;
 import org.bukkit.util.Vector;
 
@@ -49,7 +59,8 @@ public class BlockTrigger extends Trigger implements WorldSpecific
 		Click,
 		Physical,
 		BlockUpdate,
-		Shot
+		Shot,
+		Activate
 	}
 	
 	private static ArrayList<String> mTriggerTypeNames;
@@ -359,6 +370,9 @@ public class BlockTrigger extends Trigger implements WorldSpecific
 			if(event.getAction() != Action.LEFT_CLICK_BLOCK && event.getAction() != Action.RIGHT_CLICK_BLOCK && event.getAction() != Action.PHYSICAL)
 				return;
 			
+			if(event.getAction() == Action.RIGHT_CLICK_BLOCK || event.getAction() == Action.PHYSICAL)
+				ActivateChecker.handleActivateCheck(event.getClickedBlock(), event.getPlayer(), false);
+			
 			Set<BlockTrigger> triggers = getTriggersAt(event.getClickedBlock());
 			
 			for(BlockTrigger trigger : triggers)
@@ -379,6 +393,14 @@ public class BlockTrigger extends Trigger implements WorldSpecific
 				}
 			}
 		}
+		
+		@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
+		public void onBlockInteract(EntityInteractEvent event)
+		{
+			ActivateChecker.handleActivateCheck(event.getBlock(), event.getEntity(), false);
+		}
+		
+		
 		@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
 		public void onProjectileHit(ProjectileHitEvent event)
 		{
@@ -399,6 +421,11 @@ public class BlockTrigger extends Trigger implements WorldSpecific
 
 			if(block.isEmpty())
 				return;
+			
+			if(event.getEntity().getShooter() instanceof Player)
+				ActivateChecker.handleActivateCheck(block, (Player)event.getEntity().getShooter(), true);
+			else
+				ActivateChecker.handleActivateCheck(block, null, true);
 			
 			Set<BlockTrigger> triggers = getTriggersAt(block);
 			
@@ -447,6 +474,193 @@ public class BlockTrigger extends Trigger implements WorldSpecific
 				TriggerItPlugin.getInstance().getTriggerManager().completeTrigger(trigger);
 				event.getPlayer().sendMessage(ChatColor.GREEN + "Finished creation of Block trigger at " + String.format("%d, %d, %d in %s", block.getX(), block.getY(), block.getZ(), block.getWorld().getName()));
 				event.setCancelled(true);
+			}
+		}
+	}
+	
+	private static class ActivateChecker implements Runnable
+	{
+		private static final Material[] activatable = new Material[] {Material.WOOD_BUTTON, Material.STONE_BUTTON, Material.LEVER, Material.TRIPWIRE_HOOK};
+		private static final Material[] activatableShot = new Material[] {Material.WOOD_BUTTON, Material.WOOD_PLATE};
+		
+		public static boolean isActivatable(Material mat, boolean shot)
+		{
+			Material[] mats;
+			if(shot)
+				mats = activatableShot;
+			else
+				mats = activatable;
+			
+			for(Material m : mats)
+			{
+				if(m == mat)
+					return true;
+			}
+			return false;
+		}
+		
+		public static void handleActivateCheck(Block block, Entity entity, boolean shot)
+		{
+			ActivateChecker checker = null;
+			
+			if(block.getType() != Material.TRIPWIRE && !isActivatable(block.getType(), shot))
+				return;
+			
+			MaterialData data = block.getState().getData();
+			
+			if(block.getType() == Material.TRIPWIRE)
+			{
+				Block hook1, hook2;
+				
+				// Check west-east direction
+				hook1 = hook2 = block;
+				for(int i = 1; i < 40; ++i)
+				{
+					if(hook1.getType() == Material.TRIPWIRE)
+						hook1 = hook1.getRelative(BlockFace.WEST);
+					if(hook2.getType() == Material.TRIPWIRE)
+						hook2 = hook2.getRelative(BlockFace.EAST);
+					
+					if(hook1.getType() != Material.TRIPWIRE && hook2.getType() != Material.TRIPWIRE)
+						break;
+				}
+				
+				if(hook1.getType() != Material.TRIPWIRE_HOOK || hook2.getType() != Material.TRIPWIRE_HOOK)
+				{
+					// Check north-south direction
+					hook1 = hook2 = block;
+					for(int i = 1; i < 40; ++i)
+					{
+						if(hook1.getType() == Material.TRIPWIRE)
+							hook1 = hook1.getRelative(BlockFace.NORTH);
+						if(hook2.getType() == Material.TRIPWIRE)
+							hook2 = hook2.getRelative(BlockFace.SOUTH);
+						
+						if(hook1.getType() != Material.TRIPWIRE && hook2.getType() != Material.TRIPWIRE)
+							break;
+					}
+				}
+				
+				if(hook1.getType() != Material.TRIPWIRE_HOOK || hook2.getType() != Material.TRIPWIRE_HOOK)
+					return;
+				
+				TripwireHook hook1D = (TripwireHook)hook1.getState().getData();
+				TripwireHook hook2D = (TripwireHook)hook2.getState().getData();
+				
+				if(hook1D.isConnected() && hook2D.isConnected() && hook1D.getFacing() == hook2D.getFacing().getOppositeFace())
+				{
+					if(!hook1D.isActivated())
+						checker = new ActivateChecker(hook1, hook2, entity);
+				}
+			}
+			else if(data instanceof Button)
+			{
+				if(!((Button)data).isPowered())
+					checker = new ActivateChecker(block, entity);
+			}
+			else if(data instanceof Lever)
+			{
+				if(!((Lever)data).isPowered())
+					checker = new ActivateChecker(block, entity);
+			}
+			else if(data instanceof PressurePlate)
+			{
+				if(!((PressurePlate)data).isPressed())
+					checker = new ActivateChecker(block, entity);
+			}
+			
+			if(checker != null)
+				Bukkit.getScheduler().runTask(TriggerItPlugin.getInstance(), checker);
+		}
+		
+		private Block mBlock;
+		private Entity mEntity;
+		private MaterialData mData;
+		
+		private Block mSecondBlock;
+		
+		private ActivateChecker(Block block, Entity entity)
+		{
+			mBlock = block;
+			mEntity = entity;
+			mData = block.getState().getData();
+		}
+		
+		private ActivateChecker(Block block, Block secondBlock, Entity entity)
+		{
+			mBlock = block;
+			mSecondBlock = secondBlock;
+			mEntity = entity;
+			mData = block.getState().getData();
+		}
+		
+		@Override
+		public void run()
+		{
+			MaterialData newData = mBlock.getState().getData();
+			if(mData.getItemType() != newData.getItemType())
+				return;
+			
+			if(mData instanceof Button)
+			{
+				Button buttonOld = (Button)mData;
+				Button buttonNew = (Button)newData;
+				
+				if(!buttonOld.isPowered() && buttonNew.isPowered())
+					onBlockActivate(mBlock);
+			}
+			else if(mData instanceof Lever)
+			{
+				Lever leverOld = (Lever)mData;
+				Lever leverNew = (Lever)newData;
+				
+				if(!leverOld.isPowered() && leverNew.isPowered())
+					onBlockActivate(mBlock);
+			}
+			else if(mData instanceof PressurePlate)
+			{
+				PressurePlate plateOld = (PressurePlate)mData;
+				PressurePlate plateNew = (PressurePlate)newData;
+				
+				if(!plateOld.isPressed() && plateNew.isPressed())
+					onBlockActivate(mBlock);
+			}
+			else if(mData instanceof TripwireHook)
+			{
+				TripwireHook hookOld = (TripwireHook)mData;
+				TripwireHook hookNew = (TripwireHook)newData;
+				
+				if(!hookOld.isActivated() && hookNew.isActivated())
+				{
+					onBlockActivate(mBlock);
+					onBlockActivate(mSecondBlock);
+				}
+			}
+		}
+		
+		private void onBlockActivate(Block block)
+		{
+			Set<BlockTrigger> triggers = getTriggersAt(block);
+			
+			ImmutableMap.Builder<String, Object> builder = ImmutableMap.builder();
+			builder.put("block", block)
+				.put("location", block.getLocation())
+				.put("world", block.getWorld());
+			
+			if(mEntity instanceof Player)
+				builder.put("player", mEntity);
+			else if(mEntity != null)
+				builder.put("entity", mEntity);
+			 
+			Map<String, Object> args = builder.build();
+			
+			for(BlockTrigger trigger : triggers)
+			{
+				if(!trigger.isEnabled())
+					continue;
+				
+				if(trigger.getType() == TriggerType.Activate)
+					trigger.trigger(args);
 			}
 		}
 	}

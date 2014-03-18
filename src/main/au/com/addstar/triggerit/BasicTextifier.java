@@ -5,6 +5,8 @@ import java.util.Collection;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
 public class BasicTextifier implements ITextifier
@@ -23,6 +25,14 @@ public class BasicTextifier implements ITextifier
 			return String.format("%.1f %.1f %.1f", ((Location) obj).getX(), ((Location) obj).getY(), ((Location) obj).getZ());
 		else if(obj instanceof World)
 			return ((World) obj).getName();
+		else if(obj instanceof LivingEntity)
+		{
+			if(((LivingEntity) obj).getCustomName() != null)
+				return ((LivingEntity) obj).getCustomName();
+			return ((LivingEntity) obj).getType().toString();
+		}
+		else if(obj instanceof Entity)
+			return ((LivingEntity) obj).getType().toString();
 		else if(obj instanceof Collection)
 		{
 			StringBuilder out = new StringBuilder();

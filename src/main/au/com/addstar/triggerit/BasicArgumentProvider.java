@@ -14,6 +14,7 @@ import org.bukkit.block.Jukebox;
 import org.bukkit.block.NoteBlock;
 import org.bukkit.block.Sign;
 import org.bukkit.block.Skull;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
@@ -62,6 +63,23 @@ public class BasicArgumentProvider implements ArgumentProvider
 					builder.put("score_" + score.getObjective().getName(), score.getScore());
 			}
 			
+			return builder.build();
+		}
+		else if(value instanceof Entity)
+		{
+			Entity entity = (Entity)value;
+			Location location = entity.getLocation();
+			ImmutableMap.Builder<String, Object> builder = ImmutableMap.builder(); 
+			
+			builder.put("x", location.getX())
+				.put("y", location.getY())
+				.put("z", location.getZ())
+				.put("yaw", location.getYaw())
+				.put("pitch", location.getPitch())
+				.put("world", location.getWorld())
+				.put("location", location)
+				.put("type", entity.getType());
+				
 			return builder.build();
 		}
 		else if(value instanceof Block)
