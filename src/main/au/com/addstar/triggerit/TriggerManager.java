@@ -110,6 +110,33 @@ public class TriggerManager implements Listener
 		addTrigger(trigger);
 	}
 	
+	public void removeTrigger(Trigger trigger)
+	{
+		Validate.isTrue(mAllTriggers.containsValue(trigger));
+		
+		trigger.onUnload();
+		
+		File file = null;
+		UUID world = null;
+		
+		if(trigger instanceof WorldSpecific)
+		{
+			world = ((WorldSpecific)trigger).getWorld();
+			
+			if(world != null)
+				file = new File(mFolder, world.toString());
+		}
+		if(file == null)
+			file = new File(mFolder, "global");
+		
+		file = new File(file, trigger.getName() + ".yml");
+		
+		mAllTriggers.remove(world, trigger);
+		mNamedTriggers.remove(trigger.getName().toLowerCase());
+		
+		file.delete();
+	}
+	
 	public Trigger getTrigger(String name)
 	{
 		return mNamedTriggers.get(name.toLowerCase());
