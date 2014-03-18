@@ -1,6 +1,8 @@
 package au.com.addstar.triggerit;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -10,6 +12,10 @@ import org.bukkit.configuration.InvalidConfigurationException;
 
 import au.com.addstar.triggerit.ActionManager.ActionDefinition;
 import au.com.addstar.triggerit.conditions.Condition;
+import au.com.addstar.triggerit.flags.BooleanFlag;
+import au.com.addstar.triggerit.flags.Flag;
+import au.com.addstar.triggerit.flags.FlagIO;
+import au.com.addstar.triggerit.flags.Flaggable;
 
 /**
  * Represents a trigger object.<br/>
@@ -28,17 +34,25 @@ import au.com.addstar.triggerit.conditions.Condition;
  * 
  * initializeType should handle setting up needed listeners for the trigger
  */
-public abstract class Trigger
+public abstract class Trigger implements Flaggable
 {
-	private boolean mIsEnabled = true;
 	private ArrayList<Action> mActions = new ArrayList<Action>();
 	private String mName;
 	private Condition mCondition;
+	private Map<String, Flag<?>> mFlags;
 	
-	public Trigger() {}
+	private BooleanFlag mIsEnabled = new BooleanFlag();
+	
+	public Trigger() 
+	{
+		mFlags = new HashMap<String, Flag<?>>();
+		mFlags.put("enabled", mIsEnabled);
+		mIsEnabled.setValue(true);
+	}
 	
 	protected Trigger(String name)
 	{
+		this();
 		mName = name;
 	}
 	
@@ -46,12 +60,12 @@ public abstract class Trigger
 	
 	public boolean isEnabled()
 	{
-		return mIsEnabled;
+		return mIsEnabled.getValue();
 	}
 	
 	public void setEnabled(boolean enabled)
 	{
-		mIsEnabled = enabled;
+		mIsEnabled.setValue(enabled);
 	}
 	
 	public String getName()
@@ -86,7 +100,7 @@ public abstract class Trigger
 	 */
 	public final void trigger(Map<String, Object> arguments)
 	{
-		if(!mIsEnabled)
+		if(!isEnabled())
 			return;
 		
 		if(mCondition != null && !mCondition.isTrue(arguments))
@@ -109,7 +123,6 @@ public abstract class Trigger
 	public void write(ConfigurationSection section)
 	{
 		section.set("name", mName);
-		section.set("enabled", mIsEnabled);
 		ConfigurationSection settings = section.createSection("settings");
 		save(settings);
 		ConfigurationSection actions = section.createSection("actions");
@@ -127,12 +140,13 @@ public abstract class Trigger
 		
 		if(mCondition != null)
 			section.set("condition", mCondition.toString());
+		
+		FlagIO.saveFlags(mFlags, section.createSection("flags"));
 	}
 	
 	public void read(ConfigurationSection section) throws InvalidConfigurationException
 	{
 		mName = section.getString("name");
-		mIsEnabled = section.getBoolean("enabled");
 		load(section.getConfigurationSection("settings"));
 		
 		ConfigurationSection actions = section.getConfigurationSection("actions");
@@ -158,6 +172,8 @@ public abstract class Trigger
 		
 		if(section.isString("condition"))
 			mCondition = Condition.parse(section.getString("condition"));
+		
+		mFlags = FlagIO.loadFlags(section.getConfigurationSection("flags"), mFlags);
 	}
 	
 	protected abstract void save(ConfigurationSection section);
@@ -189,4 +205,33 @@ public abstract class Trigger
 	}
 	
 	protected abstract String[] describeTrigger();
+	
+	@Override
+	public void addFlag( String name, Flag<?> flag ) throws IllegalArgumentException
+	{
+		if(mFlags.containsKey(name.toLowerCase()))
+			throw new IllegalArgumentException("Duplicate flag " + name);
+		mFlags.put(name.toLowerCase(), flag);
+	}
+	
+	@Override
+	public Flag<?> getFlag( String name )
+	{
+		return mFlags.get(name.toLowerCase());
+	}
+	
+	@Override
+	public Map<String, Flag<?>> getFlags()
+	{
+		return Collections.unmodifiableMap(mFlags);
+	}
+	
+	@Override
+	public boolean hasFlag( String name )
+	{
+		return mFlags.containsKey(name.toLowerCase());
+	}
+	
+	@Override
+	public <Type> void onFlagChanged( String name, Flag<Type> flag, Type oldValue ) {}
 }

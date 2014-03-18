@@ -10,6 +10,8 @@ import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -21,6 +23,8 @@ import au.com.addstar.triggerit.TriggerItPlugin;
 import au.com.addstar.triggerit.Utilities;
 import au.com.addstar.triggerit.WorldSpecific;
 import au.com.addstar.triggerit.commands.BadArgumentException;
+import au.com.addstar.triggerit.flags.Flag;
+import au.com.addstar.triggerit.flags.FlagIO;
 
 public class WorldTrigger extends Trigger implements WorldSpecific
 {
@@ -44,13 +48,18 @@ public class WorldTrigger extends Trigger implements WorldSpecific
 	private static HashMultimap<UUID, WorldTrigger> mActiveTriggers = HashMultimap.create();
 	
 	private UUID mWorld;
-	private WorldTriggerType mType;
+	private WorldTriggerTypeFlag mType = new WorldTriggerTypeFlag();
 
-	public WorldTrigger() {}
+	public WorldTrigger() 
+	{
+		addFlag("type", mType);
+	}
 	
 	private WorldTrigger(String name)
 	{
 		super(name);
+		
+		addFlag("type", mType);
 	}
 	
 	@Override
@@ -79,7 +88,7 @@ public class WorldTrigger extends Trigger implements WorldSpecific
 	
 	public WorldTriggerType getType()
 	{
-		return mType;
+		return mType.getValue();
 	}
 	
 	@Override
@@ -89,15 +98,12 @@ public class WorldTrigger extends Trigger implements WorldSpecific
 			mWorld = UUID.fromString(section.getString("world"));
 		else
 			mWorld = null;
-		
-		mType = WorldTriggerType.valueOf(section.getString("triggertype"));
 	}
 	
 	@Override
 	protected void save( ConfigurationSection section )
 	{
 		section.set("world", mWorld.toString());
-		section.set("triggertype", mType.name());
 	}
 	
 	@Override
@@ -115,7 +121,8 @@ public class WorldTrigger extends Trigger implements WorldSpecific
 		}
 		
 		return new String[] {
-			ChatColor.GRAY + "World: " + ChatColor.YELLOW + worldName
+			ChatColor.GRAY + "World: " + ChatColor.YELLOW + worldName,
+			ChatColor.GRAY + "Trigger Type: " + ChatColor.YELLOW + mType.getValueString()
 		};
 	}
 	
@@ -170,7 +177,7 @@ public class WorldTrigger extends Trigger implements WorldSpecific
 		
 		WorldTrigger trigger = new WorldTrigger(name);
 		trigger.mWorld = (world != null ? world.getUID() : null);
-		trigger.mType = type;
+		trigger.mType.setValue(type);
 		
 		sender.sendMessage(ChatColor.GREEN + "Successfully created a World trigger for " + type.name() + " in " + (world != null ? world.getName() : "any world"));
 		
@@ -195,6 +202,7 @@ public class WorldTrigger extends Trigger implements WorldSpecific
 	public static void initializeType(TriggerItPlugin plugin)
 	{
 		Bukkit.getPluginManager().registerEvents(new WorldTriggerListener(), plugin);
+		FlagIO.addKnownType("WorldTriggerType", WorldTriggerTypeFlag.class);
 	}
 	
 	private static class WorldTriggerListener implements Listener
@@ -230,6 +238,61 @@ public class WorldTrigger extends Trigger implements WorldSpecific
 			
 			for(WorldTrigger trigger : triggers)
 				trigger.trigger(map);
+		}
+	}
+	
+	private static class WorldTriggerTypeFlag extends Flag<WorldTriggerType>
+	{
+		@Override
+		public WorldTriggerType parse( Player sender, String[] args ) throws IllegalArgumentException, BadArgumentException
+		{
+			if(args.length != 1)
+				throw new IllegalArgumentException("<type>");
+			
+			WorldTriggerType type = null;
+			
+			for(WorldTriggerType t : WorldTriggerType.values())
+			{
+				if(t.name().equalsIgnoreCase(args[0]))
+				{
+					type = t;
+					break;
+				}
+			}
+			
+			if(type == null)
+				throw new BadArgumentException(0, "Unknown world trigger type");
+			
+			return type;
+		}
+
+		@Override
+		public List<String> tabComplete( Player sender, String[] args )
+		{
+			if(args.length == 1)
+				return Utilities.matchString(args[0], mTypeNames);
+			
+			return null;
+		}
+
+		@Override
+		public void save( ConfigurationSection section )
+		{
+			section.set("value", value.name());
+		}
+
+		@Override
+		public void read( ConfigurationSection section ) throws InvalidConfigurationException
+		{
+			value = WorldTriggerType.valueOf(section.getString("value"));
+			if(value == null)
+				throw new InvalidConfigurationException("Unknown trigger type " + section.getString("value"));
+		}
+
+		@Override
+		public String getValueString()
+		{
+			return value.name();
 		}
 	}
 }

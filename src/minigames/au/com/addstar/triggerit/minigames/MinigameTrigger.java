@@ -31,6 +31,8 @@ import au.com.addstar.triggerit.Trigger;
 import au.com.addstar.triggerit.TriggerItPlugin;
 import au.com.addstar.triggerit.Utilities;
 import au.com.addstar.triggerit.commands.BadArgumentException;
+import au.com.addstar.triggerit.flags.Flag;
+import au.com.addstar.triggerit.flags.FlagIO;
 
 public class MinigameTrigger extends Trigger
 {
@@ -55,15 +57,24 @@ public class MinigameTrigger extends Trigger
 	private static HashMultimap<String, MinigameTrigger> mTriggers = HashMultimap.create();
 	
 	private String mMinigame;
-	private TriggerType mType;
+	private MinigameTriggerTypeFlag mType = new MinigameTriggerTypeFlag();
 	
-	public MinigameTrigger() {}
+	public MinigameTrigger() 
+	{
+		addFlag("type", mType);
+	}
 	
 	private MinigameTrigger(String name)
 	{
 		super(name);
+		
+		addFlag("type", mType);
 	}
 	
+	public TriggerType getType()
+	{
+		return mType.getValue();
+	}
 	
 	@Override
 	public boolean isValid()
@@ -76,8 +87,6 @@ public class MinigameTrigger extends Trigger
 	{
 		if(mMinigame != null)
 			section.set("minigame", mMinigame);
-		
-		section.set("mgtype", mType.name());
 	}
 
 	@Override
@@ -87,8 +96,6 @@ public class MinigameTrigger extends Trigger
 			mMinigame = section.getString("minigame").toLowerCase();
 		else
 			mMinigame = null;
-		
-		mType = TriggerType.valueOf(section.getString("mgtype"));
 	}
 
 	@Override
@@ -96,7 +103,7 @@ public class MinigameTrigger extends Trigger
 	{
 		return new String[] {
 			ChatColor.GRAY + "Minigame: " + ChatColor.YELLOW + (mMinigame == null ? "Any Minigame" : mMinigame),
-			ChatColor.GRAY + "Trigger Type: " + ChatColor.YELLOW + mType.name()
+			ChatColor.GRAY + "Trigger Type: " + ChatColor.YELLOW + mType.getValueString()
 		};
 	}
 	
@@ -137,7 +144,7 @@ public class MinigameTrigger extends Trigger
 		
 		MinigameTrigger trigger = new MinigameTrigger(name);
 		trigger.mMinigame = (minigame == null ? null : minigame.getName().toLowerCase());
-		trigger.mType = type;
+		trigger.mType.setValue(type);
 		
 		sender.sendMessage(ChatColor.GREEN + "Created a new Minigame Trigger on " + type.name() + " for " + (minigame == null ? "any minigame" : minigame.getName()));
 		
@@ -156,6 +163,7 @@ public class MinigameTrigger extends Trigger
 	public static void initializeType(TriggerItPlugin plugin)
 	{
 		Bukkit.getPluginManager().registerEvents(new MinigameListener(), plugin);
+		FlagIO.addKnownType("MinigameTriggerType", MinigameTriggerTypeFlag.class);
 	}
 	
 	private static class MinigameListener implements Listener
@@ -174,7 +182,7 @@ public class MinigameTrigger extends Trigger
 			
 			for(MinigameTrigger trigger : triggers)
 			{
-				if(trigger.mType == TriggerType.Join)
+				if(trigger.getType() == TriggerType.Join)
 					trigger.trigger(map);
 			}
 			
@@ -182,7 +190,7 @@ public class MinigameTrigger extends Trigger
 			
 			for(MinigameTrigger trigger : triggers)
 			{
-				if(trigger.mType == TriggerType.Join)
+				if(trigger.getType() == TriggerType.Join)
 					trigger.trigger(map);
 			}
 		}
@@ -208,7 +216,7 @@ public class MinigameTrigger extends Trigger
 			
 			for(MinigameTrigger trigger : triggers)
 			{
-				if(trigger.mType == TriggerType.Win)
+				if(trigger.getType() == TriggerType.Win)
 					trigger.trigger(map);
 			}
 			
@@ -216,7 +224,7 @@ public class MinigameTrigger extends Trigger
 			
 			for(MinigameTrigger trigger : triggers)
 			{
-				if(trigger.mType == TriggerType.Win)
+				if(trigger.getType() == TriggerType.Win)
 					trigger.trigger(map);
 			}
 		}
@@ -243,7 +251,7 @@ public class MinigameTrigger extends Trigger
 			
 			for(MinigameTrigger trigger : triggers)
 			{
-				if(trigger.mType == TriggerType.TeamWin)
+				if(trigger.getType() == TriggerType.TeamWin)
 					trigger.trigger(map);
 			}
 			
@@ -251,7 +259,7 @@ public class MinigameTrigger extends Trigger
 			
 			for(MinigameTrigger trigger : triggers)
 			{
-				if(trigger.mType == TriggerType.TeamWin)
+				if(trigger.getType() == TriggerType.TeamWin)
 					trigger.trigger(map);
 			}
 		}
@@ -270,7 +278,7 @@ public class MinigameTrigger extends Trigger
 			
 			for(MinigameTrigger trigger : triggers)
 			{
-				if(trigger.mType == TriggerType.Quit)
+				if(trigger.getType() == TriggerType.Quit)
 					trigger.trigger(map);
 			}
 			
@@ -278,7 +286,7 @@ public class MinigameTrigger extends Trigger
 			
 			for(MinigameTrigger trigger : triggers)
 			{
-				if(trigger.mType == TriggerType.Quit)
+				if(trigger.getType() == TriggerType.Quit)
 					trigger.trigger(map);
 			}
 		}
@@ -301,7 +309,7 @@ public class MinigameTrigger extends Trigger
 			
 			for(MinigameTrigger trigger : triggers)
 			{
-				if(trigger.mType == TriggerType.Revert)
+				if(trigger.getType() == TriggerType.Revert)
 					trigger.trigger(map);
 			}
 			
@@ -309,7 +317,7 @@ public class MinigameTrigger extends Trigger
 			
 			for(MinigameTrigger trigger : triggers)
 			{
-				if(trigger.mType == TriggerType.Revert)
+				if(trigger.getType() == TriggerType.Revert)
 					trigger.trigger(map);
 			}
 		}
@@ -332,7 +340,7 @@ public class MinigameTrigger extends Trigger
 			
 			for(MinigameTrigger trigger : triggers)
 			{
-				if(trigger.mType == TriggerType.Spectate)
+				if(trigger.getType() == TriggerType.Spectate)
 					trigger.trigger(map);
 			}
 			
@@ -340,10 +348,64 @@ public class MinigameTrigger extends Trigger
 			
 			for(MinigameTrigger trigger : triggers)
 			{
-				if(trigger.mType == TriggerType.Spectate)
+				if(trigger.getType() == TriggerType.Spectate)
 					trigger.trigger(map);
 			}
 		}
 	}
 
+	private static class MinigameTriggerTypeFlag extends Flag<TriggerType>
+	{
+		@Override
+		public TriggerType parse( Player sender, String[] args ) throws IllegalArgumentException, BadArgumentException
+		{
+			if(args.length != 1)
+				throw new IllegalArgumentException("<type>");
+			
+			TriggerType type = null;
+			
+			for(TriggerType t : TriggerType.values())
+			{
+				if(t.name().equalsIgnoreCase(args[0]))
+				{
+					type = t;
+					break;
+				}
+			}
+			
+			if(type == null)
+				throw new BadArgumentException(0, "Unknown minigame trigger type");
+			
+			return type;
+		}
+
+		@Override
+		public List<String> tabComplete( Player sender, String[] args )
+		{
+			if(args.length == 1)
+				return Utilities.matchString(args[0], mTypeNames);
+			
+			return null;
+		}
+
+		@Override
+		public void save( ConfigurationSection section )
+		{
+			section.set("value", value.name());
+		}
+
+		@Override
+		public void read( ConfigurationSection section ) throws InvalidConfigurationException
+		{
+			value = TriggerType.valueOf(section.getString("value"));
+			if(value == null)
+				throw new InvalidConfigurationException("Unknown trigger type " + section.getString("value"));
+		}
+
+		@Override
+		public String getValueString()
+		{
+			return value.name();
+		}
+	}
 }

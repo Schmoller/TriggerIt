@@ -6,9 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.WeakHashMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
@@ -22,20 +19,25 @@ import au.com.addstar.triggerit.Trigger;
 import au.com.addstar.triggerit.TriggerItPlugin;
 import au.com.addstar.triggerit.WorldSpecific;
 import au.com.addstar.triggerit.commands.BadArgumentException;
+import au.com.addstar.triggerit.flags.TimeFlag;
 
 public class TimeTrigger extends Trigger implements WorldSpecific
 {
 	private static List<TimeTrigger> mTriggers = new ArrayList<TimeTrigger>();
 	private static TimeWatcher mWatcher;
 	
-	private int mTime;
+	private TimeFlag mTime = new TimeFlag();
 	private UUID mWorld;
 	
-	public TimeTrigger() {}
+	public TimeTrigger() 
+	{
+		addFlag("time", mTime);
+	}
 	
 	private TimeTrigger(String name)
 	{
 		super(name);
+		addFlag("time", mTime);
 	}
 	
 	@Override
@@ -68,7 +70,6 @@ public class TimeTrigger extends Trigger implements WorldSpecific
 	@Override
 	protected void load( ConfigurationSection section )
 	{
-		mTime = section.getInt("time");
 		if(section.isString("world"))
 			mWorld = UUID.fromString(section.getString("world"));
 	}
@@ -76,7 +77,6 @@ public class TimeTrigger extends Trigger implements WorldSpecific
 	@Override
 	protected void save( ConfigurationSection section )
 	{
-		section.set("time", mTime);
 		if(mWorld != null)
 			section.set("world", mWorld.toString());
 	}
@@ -94,20 +94,13 @@ public class TimeTrigger extends Trigger implements WorldSpecific
 				worldName = mWorld.toString();
 		}
 		
-		int ticks = mTime + 6000;
-		if(ticks >= 24000)
-			ticks -= 24000;
-		
-		int hours = ticks / 1000;
-		int minutes = (ticks - (hours * 1000)) * 60 / 1000;
-		
 		return new String[] {
-			ChatColor.GRAY + "Time: " + ChatColor.YELLOW + String.format("%02d:%02d", hours, minutes),
+			ChatColor.GRAY + "Time: " + ChatColor.YELLOW + mTime.getValueString(),
 			ChatColor.GRAY + "World: " + ChatColor.YELLOW + worldName,
 		};
 	}
 	
-	private static Pattern mTimePattern = Pattern.compile("([\\d]+)ticks|(\\d{2}:\\d{2})|(\\d{1,2}(?::\\d{1,2})?)(am|pm)");
+	
 	
 	public static TimeTrigger newTrigger(CommandSender sender, String name, String[] args) throws IllegalStateException, BadArgumentException
 	{
@@ -124,57 +117,7 @@ public class TimeTrigger extends Trigger implements WorldSpecific
 			trigger.mWorld = world.getUID();
 		}
 		
-		Matcher match = mTimePattern.matcher(args[0]);
-		
-		if(!match.matches())
-		{
-			BadArgumentException ex = new BadArgumentException(0, "Unknown time.");
-			ex.addInfo(ChatColor.GOLD + "Expected time formats: " + ChatColor.GRAY + "1000ticks 10:30 3:20pm 4am");
-		}
-		
-		if(match.group(1) != null)
-			trigger.mTime = Integer.parseInt(match.group(1));
-		else if(match.group(2) != null)
-		{
-			String[] parts = match.group(2).split(":");
-			int hours = Integer.parseInt(parts[0]);
-			int minutes = Integer.parseInt(parts[1]);
-			
-			int ticks = hours * 1000 + (minutes * 1000 / 60);
-			ticks -= 6000;
-			if(ticks < 0)
-				ticks += 24000;
-			while(ticks >= 24000)
-				ticks -= 24000;
-			trigger.mTime = ticks;
-		}
-		else if(match.group(3) != null)
-		{
-			boolean am = match.group(4).equalsIgnoreCase("am");
-			String[] parts = match.group(3).split(":");
-			int hours = Integer.parseInt(parts[0]);
-			int minutes = (parts.length == 2 ? Integer.parseInt(parts[1]) : 0);
-
-			if(hours == 12)
-				hours = 0;
-			
-			while(hours > 12)
-			{
-				hours -= 12;
-				am = !am;
-			}
-			
-			if(!am)
-				hours += 12;
-			
-			int ticks = hours * 1000 + (minutes * 1000 / 60);
-			ticks -= 6000;
-			if(ticks < 0)
-				ticks += 24000;
-			while(ticks >= 24000)
-				ticks -= 24000;
-			trigger.mTime = ticks;
-		}
+		trigger.mTime.setValue(trigger.mTime.parse(null, args));
 		
 		return trigger;
 	}
@@ -192,14 +135,7 @@ public class TimeTrigger extends Trigger implements WorldSpecific
 				worldName = mWorld.toString();
 		}
 		
-		int ticks = mTime + 6000;
-		if(ticks >= 24000)
-			ticks -= 24000;
-		
-		int hours = ticks / 1000;
-		int minutes = (ticks - (hours * 1000)) * 60 / 1000;
-		
-		return String.format("Time trigger at %2d:%2d in %s", hours, minutes, worldName);
+		return String.format("Time trigger at %s in %s", mTime.getValueString(), worldName);
 	}
 	
 	public static List<String> tabComplete(CommandSender sender, String[] args)
@@ -257,7 +193,7 @@ public class TimeTrigger extends Trigger implements WorldSpecific
 				{
 					if(trigger.mWorld == null || trigger.mWorld.equals(worldId))
 					{
-						if(lastTime < trigger.mTime && time >= trigger.mTime)
+						if(lastTime < trigger.mTime.getValue() && time >= trigger.mTime.getValue())
 							trigger.trigger(map);
 					}
 				}

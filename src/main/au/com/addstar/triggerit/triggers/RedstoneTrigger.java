@@ -32,6 +32,8 @@ import au.com.addstar.triggerit.TriggerItPlugin;
 import au.com.addstar.triggerit.Utilities;
 import au.com.addstar.triggerit.WorldSpecific;
 import au.com.addstar.triggerit.commands.BadArgumentException;
+import au.com.addstar.triggerit.flags.BooleanFlag;
+import au.com.addstar.triggerit.flags.IntegerFlag;
 
 public class RedstoneTrigger extends Trigger implements WorldSpecific
 {
@@ -124,16 +126,22 @@ public class RedstoneTrigger extends Trigger implements WorldSpecific
 		zMap.put(location.getBlockY(), trigger);
 	}
 	
-	private boolean mOnHigh;
-	private int mThreshold;
+	private BooleanFlag mOnHigh = new BooleanFlag();
+	private IntegerFlag mThreshold = new IntegerFlag();
 	
 	private BlockVector mLocation;
 	private UUID mWorld;
 	
-	public RedstoneTrigger() {}
+	public RedstoneTrigger() 
+	{
+		addFlag("on-high", mOnHigh);
+		addFlag("threshold", mThreshold);
+	}
 	private RedstoneTrigger(String name)
 	{
 		super(name);
+		addFlag("on-high", mOnHigh);
+		addFlag("threshold", mThreshold);
 	}
 	
 	public Location getLocation()
@@ -153,22 +161,22 @@ public class RedstoneTrigger extends Trigger implements WorldSpecific
 	
 	public int getThreshold()
 	{
-		return mThreshold;
+		return mThreshold.getValue();
 	}
 	
 	public void setThreshold(int threshold)
 	{
-		mThreshold = threshold;
+		mThreshold.setValue(threshold);
 	}
 	
 	public boolean isOnHigh()
 	{
-		return mOnHigh;
+		return mOnHigh.getValue();
 	}
 	
 	public void setIsOnHigh(boolean high)
 	{
-		mOnHigh = high;
+		mOnHigh.setValue(high);
 	}
 	
 	private void setBlock(Block block)
@@ -200,8 +208,6 @@ public class RedstoneTrigger extends Trigger implements WorldSpecific
 	{
 		mWorld = UUID.fromString(section.getString("world"));
 		mLocation = (BlockVector)section.get("block");
-		mOnHigh = section.getBoolean("high");
-		mThreshold = section.getInt("value");
 	}
 	
 	@Override
@@ -209,8 +215,6 @@ public class RedstoneTrigger extends Trigger implements WorldSpecific
 	{
 		section.set("world", mWorld.toString());
 		section.set("block", mLocation);
-		section.set("high", mOnHigh);
-		section.set("value", mThreshold);
 	}
 	
 	@Override
@@ -220,10 +224,10 @@ public class RedstoneTrigger extends Trigger implements WorldSpecific
 			return "Redstone trigger (incomplete)";
 
 		World world = Bukkit.getWorld(mWorld);
-		if(mOnHigh)
-			return String.format("Redstone trigger @(%d,%d,%d,%s) on >= %d", mLocation.getBlockX(), mLocation.getBlockY(), mLocation.getBlockZ(), (world != null ? world.getName() : "Unloaded"), mThreshold); 
+		if(isOnHigh())
+			return String.format("Redstone trigger @(%d,%d,%d,%s) on >= %d", mLocation.getBlockX(), mLocation.getBlockY(), mLocation.getBlockZ(), (world != null ? world.getName() : "Unloaded"), mThreshold.getValue()); 
 		else
-			return String.format("Redstone trigger @(%d,%d,%d,%s) on <= %d", mLocation.getBlockX(), mLocation.getBlockY(), mLocation.getBlockZ(), (world != null ? world.getName() : "Unloaded"), mThreshold);
+			return String.format("Redstone trigger @(%d,%d,%d,%s) on <= %d", mLocation.getBlockX(), mLocation.getBlockY(), mLocation.getBlockZ(), (world != null ? world.getName() : "Unloaded"), mThreshold.getValue());
 	}
 	
 	@Override
@@ -233,8 +237,8 @@ public class RedstoneTrigger extends Trigger implements WorldSpecific
 		
 		return new String[] {
 			ChatColor.GRAY + "Location: " + ChatColor.YELLOW + String.format("%d, %d, %d in %s", mLocation.getBlockX(), mLocation.getBlockY(), mLocation.getBlockZ(), (world != null ? world.getName() : mWorld.toString())),
-			ChatColor.GRAY + "Trigger on: " + ChatColor.YELLOW + (mOnHigh ? "High signal" : "Low signal"),
-			ChatColor.GRAY + "Threshold: " + ChatColor.YELLOW + mThreshold
+			ChatColor.GRAY + "Trigger on: " + ChatColor.YELLOW + (isOnHigh() ? "High signal" : "Low signal"),
+			ChatColor.GRAY + "Threshold: " + ChatColor.YELLOW + mThreshold.getValueString()
 		};
 	}
 	
@@ -267,8 +271,8 @@ public class RedstoneTrigger extends Trigger implements WorldSpecific
 			throw new BadArgumentException(1, "Expected high or low");
 		
 		RedstoneTrigger trigger = new RedstoneTrigger(name);
-		trigger.mOnHigh = onHigh;
-		trigger.mThreshold = level;
+		trigger.mOnHigh.setValue(onHigh);
+		trigger.mThreshold.setValue(level);
 		
 		mWaitingTriggers.put((Player)sender, trigger);
 		sender.sendMessage(ChatColor.GREEN + "Please click a block to complete the block trigger");

@@ -18,6 +18,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -46,6 +47,8 @@ import au.com.addstar.triggerit.TriggerItPlugin;
 import au.com.addstar.triggerit.Utilities;
 import au.com.addstar.triggerit.WorldSpecific;
 import au.com.addstar.triggerit.commands.BadArgumentException;
+import au.com.addstar.triggerit.flags.Flag;
+import au.com.addstar.triggerit.flags.FlagIO;
 
 public class BlockTrigger extends Trigger implements WorldSpecific
 {
@@ -167,14 +170,18 @@ public class BlockTrigger extends Trigger implements WorldSpecific
 		zMap.put(location.getBlockY(), trigger);
 	}
 	
-	private TriggerType mType;
+	private TriggerTypeFlag mType = new TriggerTypeFlag();
 	private BlockVector mLocation;
 	private UUID mWorld;
 	
-	public BlockTrigger() {}
+	public BlockTrigger() 
+	{
+		addFlag("type", mType);
+	}
 	private BlockTrigger(String name)
 	{
 		super(name);
+		addFlag("type", mType);
 	}
 	
 	public Location getLocation()
@@ -188,12 +195,12 @@ public class BlockTrigger extends Trigger implements WorldSpecific
 	
 	public TriggerType getType()
 	{
-		return mType;
+		return mType.getValue();
 	}
 	
 	public void setType(TriggerType type)
 	{
-		mType = type;
+		mType.setValue(type);
 	}
 	
 	private void setBlock(Block block)
@@ -233,13 +240,12 @@ public class BlockTrigger extends Trigger implements WorldSpecific
 			return "Block trigger (incomplete)";
 
 		World world = Bukkit.getWorld(mWorld);
-		return String.format("Block trigger @(%d,%d,%d,%s) for %s", mLocation.getBlockX(), mLocation.getBlockY(), mLocation.getBlockZ(), (world != null ? world.getName() : "Unloaded"), mType.name()); 
+		return String.format("Block trigger @(%d,%d,%d,%s) for %s", mLocation.getBlockX(), mLocation.getBlockY(), mLocation.getBlockZ(), (world != null ? world.getName() : "Unloaded"), mType.getValueString()); 
 	}
 	
 	@Override
 	protected void load( ConfigurationSection section )
 	{
-		mType = TriggerType.valueOf(section.getString("type"));
 		mWorld = UUID.fromString(section.getString("world"));
 		mLocation = (BlockVector)section.get("block");
 	}
@@ -249,7 +255,6 @@ public class BlockTrigger extends Trigger implements WorldSpecific
 	{
 		section.set("block", mLocation);
 		section.set("world", mWorld.toString());
-		section.set("type", mType.name());
 	}
 	
 	@Override
@@ -259,7 +264,7 @@ public class BlockTrigger extends Trigger implements WorldSpecific
 		
 		return new String[] {
 			ChatColor.GRAY + "Location: " + ChatColor.YELLOW + String.format("%d, %d, %d in %s", mLocation.getBlockX(), mLocation.getBlockY(), mLocation.getBlockZ(), (world != null ? world.getName() : mWorld.toString())),
-			ChatColor.GRAY + "Trigger on: " + ChatColor.YELLOW + mType.name()
+			ChatColor.GRAY + "Trigger on: " + ChatColor.YELLOW + mType.getValueString()
 		};
 	}
 	
@@ -295,6 +300,7 @@ public class BlockTrigger extends Trigger implements WorldSpecific
 	public static void initializeType(TriggerItPlugin plugin)
 	{
 		Bukkit.getPluginManager().registerEvents(new BlockTriggerListener(), plugin);
+		FlagIO.addKnownType("BlockTriggerType", TriggerTypeFlag.class);
 	}
 	
 	private static class BlockTriggerListener implements Listener
@@ -662,6 +668,51 @@ public class BlockTrigger extends Trigger implements WorldSpecific
 				if(trigger.getType() == TriggerType.Activate)
 					trigger.trigger(args);
 			}
+		}
+	}
+	
+	public static class TriggerTypeFlag extends Flag<TriggerType>
+	{
+		@Override
+		public TriggerType parse( Player sender, String[] args ) throws IllegalArgumentException, BadArgumentException
+		{
+			if(args.length != 1)
+				throw new IllegalArgumentException("<type>");
+			
+			TriggerType type = mTriggerTypeMap.get(args[0].toLowerCase());
+			if(type == null)
+				throw new BadArgumentException(0, "Unknown block trigger type");
+			
+			return type;
+		}
+
+		@Override
+		public List<String> tabComplete( Player sender, String[] args )
+		{
+			if(args.length == 1)
+				return Utilities.matchString(args[0], mTriggerTypeNames);
+			
+			return null;
+		}
+
+		@Override
+		public void save( ConfigurationSection section )
+		{
+			section.set("value", value.name());
+		}
+
+		@Override
+		public void read( ConfigurationSection section ) throws InvalidConfigurationException
+		{
+			value = TriggerType.valueOf(section.getString("value"));
+			if(value == null)
+				throw new InvalidConfigurationException("Unknown trigger type " + section.getString("value"));
+		}
+
+		@Override
+		public String getValueString()
+		{
+			return value.name();
 		}
 	}
 }

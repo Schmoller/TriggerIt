@@ -14,6 +14,7 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -33,6 +34,8 @@ import au.com.addstar.triggerit.TriggerItPlugin;
 import au.com.addstar.triggerit.Utilities;
 import au.com.addstar.triggerit.WorldSpecific;
 import au.com.addstar.triggerit.commands.BadArgumentException;
+import au.com.addstar.triggerit.flags.Flag;
+import au.com.addstar.triggerit.flags.FlagIO;
 
 public class RegionTrigger extends Trigger implements WorldSpecific
 {
@@ -100,13 +103,17 @@ public class RegionTrigger extends Trigger implements WorldSpecific
 	private String mRegionId;
 	private UUID mWorld;
 	
-	private RegionTriggerType mType;
+	private RegionTriggerTypeFlag mType = new RegionTriggerTypeFlag();
 
-	public RegionTrigger() {}
+	public RegionTrigger() 
+	{
+		addFlag("type", mType);
+	}
 	
 	private RegionTrigger(String name)
 	{
 		super(name);
+		addFlag("type", mType);
 	}
 	
 	@Override
@@ -135,7 +142,7 @@ public class RegionTrigger extends Trigger implements WorldSpecific
 	
 	public RegionTriggerType getType()
 	{
-		return mType;
+		return mType.getValue();
 	}
 	
 	@Override
@@ -154,7 +161,6 @@ public class RegionTrigger extends Trigger implements WorldSpecific
 	{
 		mWorld = UUID.fromString(section.getString("world"));
 		mRegionId = section.getString("region");
-		mType = RegionTriggerType.valueOf(section.getString("triggertype"));
 	}
 	
 	@Override
@@ -162,7 +168,6 @@ public class RegionTrigger extends Trigger implements WorldSpecific
 	{
 		section.set("world", mWorld.toString());
 		section.set("region", mRegionId);
-		section.set("triggertype", mType.name());
 	}
 	
 	@Override
@@ -172,7 +177,8 @@ public class RegionTrigger extends Trigger implements WorldSpecific
 		
 		return new String[] {
 			ChatColor.GRAY + "Region: " + ChatColor.YELLOW + mRegionId,
-			ChatColor.GRAY + "World: " + ChatColor.YELLOW + (world != null ? world.getName() : mWorld.toString())
+			ChatColor.GRAY + "World: " + ChatColor.YELLOW + (world != null ? world.getName() : mWorld.toString()),
+			ChatColor.GRAY + "Trigger Type: " + ChatColor.YELLOW + mType.getValueString()
 		};
 	}
 	
@@ -257,7 +263,7 @@ public class RegionTrigger extends Trigger implements WorldSpecific
 		trigger.mRegion = region;
 		trigger.mRegionId = region.getId();
 		trigger.mWorld = world.getUID();
-		trigger.mType = type;
+		trigger.mType.setValue(type);
 		
 		sender.sendMessage(ChatColor.GREEN + "Successfully created a Region trigger for " + region.getId() + " in " + world.getName());
 		
@@ -281,6 +287,7 @@ public class RegionTrigger extends Trigger implements WorldSpecific
 	{
 		RegionTrigger.plugin = WorldGuardPlugin.getPlugin(WorldGuardPlugin.class);
 		Bukkit.getPluginManager().registerEvents(new RegionTriggerListener(), plugin);
+		FlagIO.addKnownType("RegionTriggerType", RegionTriggerTypeFlag.class);
 	}
 	
 	private static class RegionTriggerListener implements Listener
@@ -396,6 +403,61 @@ public class RegionTrigger extends Trigger implements WorldSpecific
 					onEnterRegion(player, to.getWorld(), region);
 			}
 			mPlayerRegions.put(player, newRegions);
+		}
+	}
+	
+	private static class RegionTriggerTypeFlag extends Flag<RegionTriggerType>
+	{
+		@Override
+		public RegionTriggerType parse( Player sender, String[] args ) throws IllegalArgumentException, BadArgumentException
+		{
+			if(args.length != 1)
+				throw new IllegalArgumentException("<type>");
+			
+			RegionTriggerType type = null;
+			
+			for(RegionTriggerType t : RegionTriggerType.values())
+			{
+				if(t.name().equalsIgnoreCase(args[0]))
+				{
+					type = t;
+					break;
+				}
+			}
+			
+			if(type == null)
+				throw new BadArgumentException(0, "Unknown region trigger type");
+			
+			return type;
+		}
+
+		@Override
+		public List<String> tabComplete( Player sender, String[] args )
+		{
+			if(args.length == 1)
+				return Utilities.matchString(args[0], mTypeNames);
+			
+			return null;
+		}
+
+		@Override
+		public void save( ConfigurationSection section )
+		{
+			section.set("value", value.name());
+		}
+
+		@Override
+		public void read( ConfigurationSection section ) throws InvalidConfigurationException
+		{
+			value = RegionTriggerType.valueOf(section.getString("value"));
+			if(value == null)
+				throw new InvalidConfigurationException("Unknown trigger type " + section.getString("value"));
+		}
+
+		@Override
+		public String getValueString()
+		{
+			return value.name();
 		}
 	}
 }
