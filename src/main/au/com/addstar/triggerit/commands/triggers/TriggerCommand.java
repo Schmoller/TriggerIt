@@ -15,5 +15,6 @@ public class TriggerCommand extends RootCommandDispatcher
 		registerCommand(new ListTriggersCommand());
 		registerCommand(new TriggerInfoCommand());
 		registerCommand(new TriggerConditionCommand());
+		registerCommand(new TriggerSetCommand());
 	}
 }
