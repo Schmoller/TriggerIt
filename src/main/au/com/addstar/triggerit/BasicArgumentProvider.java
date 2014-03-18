@@ -78,7 +78,8 @@ public class BasicArgumentProvider implements ArgumentProvider
 				.put("pitch", location.getPitch())
 				.put("world", location.getWorld())
 				.put("location", location)
-				.put("type", entity.getType());
+				.put("type", entity.getType())
+				.put("id", entity.getEntityId());
 				
 			return builder.build();
 		}

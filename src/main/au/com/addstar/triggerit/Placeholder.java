@@ -9,6 +9,7 @@ public class Placeholder
 	
 	private List<? extends Object> mList;
 	private int mIndex;
+	private Placeholder mLink;
 	
 	public Placeholder(int start, int end, List<? extends Object> list)
 	{
@@ -16,6 +17,16 @@ public class Placeholder
 		this.end = end;
 		mList = list;
 		mIndex = 0;
+	}
+	
+	public Placeholder getLink()
+	{
+		return mLink;
+	}
+	
+	public void setLink(Placeholder holder)
+	{
+		mLink = holder;
 	}
 	
 	public Object getCurrent()
@@ -35,8 +46,24 @@ public class Placeholder
 		return true;
 	}
 	
+	public boolean isEmpty()
+	{
+		return mList.isEmpty();
+	}
+	
+	@Override
+	public boolean equals( Object obj )
+	{
+		if(!(obj instanceof Placeholder))
+			return false;
+		
+		return ((Placeholder)obj).mList.equals(mList);
+	}
+	
 	public Placeholder copy()
 	{
-		return new Placeholder(start, end, mList);
+		Placeholder copy = new Placeholder(start, end, mList);
+		copy.setLink(mLink);
+		return copy;
 	}
 }

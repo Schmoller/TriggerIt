@@ -2,6 +2,8 @@ package au.com.addstar.triggerit;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +33,7 @@ public class StringWithPlaceholders implements Iterable<String>
 	public static StringWithPlaceholders from(String string, Map<String, Object> arguments, ArgumentProvider provider, ITextifier textifier)
 	{
 		ArrayList<Placeholder> placeholders = new ArrayList<Placeholder>();
+		HashMap<String, Placeholder> parentPlaceholders = new HashMap<String, Placeholder>();
 		Matcher m = mPattern.matcher(string);
 		
 		while(m.find())
@@ -42,7 +45,7 @@ public class StringWithPlaceholders implements Iterable<String>
 			{
 				List<Object> results = new ArrayList<Object>((Collection<?>)obj);
 				
-				nextItem: for(int o = 0; o < results.size(); ++o)
+				for(int o = 0; o < results.size(); ++o)
 				{
 					Object sub = results.get(o);
 					
@@ -53,21 +56,22 @@ public class StringWithPlaceholders implements Iterable<String>
 							sub = args.get(parts[i]);
 						else
 							sub = null;
-						
-						if(sub == null)
-						{
-							results.remove(o);
-							--o;
-							continue nextItem;
-						}
 					}
 					
 					results.set(o, sub);
 				}
 				
-				if(!results.isEmpty())
-					placeholders.add(new Placeholder(m.start(), m.end(), results));
+				Placeholder holder = new Placeholder(m.start(), m.end(), results);
+				Placeholder parent = parentPlaceholders.get(parts[0]); 
+				if(parent != null)
+					holder.setLink(parent);
+				else
+					parentPlaceholders.put(parts[0], holder);
+					
+				placeholders.add(holder);
 			}
+			else
+				placeholders.add(new Placeholder(m.start(), m.end(), Collections.emptyList()));
 		}
 		
 		if(placeholders.isEmpty())
@@ -87,6 +91,18 @@ public class StringWithPlaceholders implements Iterable<String>
 				mPlaceholderCoppies.add(placeholder.copy());
 			
 			mHasNext = !mPlaceholderCoppies.isEmpty();
+			
+			if(mHasNext)
+			{
+				for(Placeholder holder : mPlaceholderCoppies)
+				{
+					if(holder.isEmpty())
+					{
+						mHasNext = false;
+						break;
+					}
+				}
+			}
 		}
 		
 		@Override
@@ -116,8 +132,18 @@ public class StringWithPlaceholders implements Iterable<String>
 			{
 				Placeholder placeholder = mPlaceholderCoppies.get(i);
 				
-				if(placeholder.next())
-					break;
+				if(placeholder.getLink() == null)
+				{
+					// Progress linked placeholders
+					for(Placeholder other : mPlaceholderCoppies)
+					{
+						if(placeholder.equals(other.getLink()))
+							other.next();
+					}
+					
+					if(placeholder.next())
+						break;
+				}
 			
 				if(i == mPlaceholderCoppies.size()-1)
 				{
