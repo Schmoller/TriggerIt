@@ -68,6 +68,12 @@ public class MessageAction implements Action
 		};
 	}
 	
+	@Override
+	public String toString()
+	{
+		return String.format("Message '%s' to %s", mMessage + ChatColor.RESET, mTarget.describe());
+	}
+	
 	public static MessageAction newAction(CommandSender sender, String[] args) throws IllegalArgumentException, IllegalStateException, BadArgumentException
 	{
 		if(args.length < 2)

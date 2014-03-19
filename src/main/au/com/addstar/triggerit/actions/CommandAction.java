@@ -73,6 +73,12 @@ public class CommandAction implements Action
 		};
 	}
 	
+	@Override
+	public String toString()
+	{
+		return String.format("Command '%s' as %s", mCommand, mExecutor.describe());
+	}
+	
 	public static CommandAction newAction(CommandSender sender, String[] args) throws IllegalArgumentException, IllegalStateException, BadArgumentException
 	{
 		if(args.length < 2)

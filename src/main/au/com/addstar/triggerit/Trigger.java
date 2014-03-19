@@ -98,6 +98,11 @@ public abstract class Trigger implements Flaggable
 		mActions.add(index, action);
 	}
 	
+	public final void setAction(Action action, int index)
+	{
+		mActions.set(index, action);
+	}
+	
 	public Condition getCondition()
 	{
 		return mCondition;

@@ -19,6 +19,7 @@ public class ActionCommand extends CommandDispatcher implements ICommand
 		registerCommand(new ClearActionsCommand());
 		registerCommand(new RemoveActionCommand());
 		registerCommand(new InsertActionCommand());
+		registerCommand(new SetActionCommand());
 	}
 
 	@Override

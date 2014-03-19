@@ -75,6 +75,12 @@ public class TeleportAction implements Action
 		};
 	}
 	
+	@Override
+	public String toString()
+	{
+		return String.format("Teleport %s to %s", mTarget.describe(), mDestination.describe());
+	}
+	
 	public static TeleportAction newAction(CommandSender sender, String[] args) throws BadArgumentException, IllegalStateException
 	{
 		if(args.length == 0)

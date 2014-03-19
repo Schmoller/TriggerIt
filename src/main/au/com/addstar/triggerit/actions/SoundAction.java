@@ -80,6 +80,12 @@ public class SoundAction implements Action
 			ChatColor.GRAY + " Target: " + ChatColor.YELLOW + mTarget.describe()
 		};
 	}
+	
+	@Override
+	public String toString()
+	{
+		return String.format("PlaySound %s to %s", mSound.name(), mTarget.describe());
+	}
 
 	public static SoundAction newAction(CommandSender sender, String[] args) throws IllegalArgumentException, IllegalStateException, BadArgumentException
 	{
