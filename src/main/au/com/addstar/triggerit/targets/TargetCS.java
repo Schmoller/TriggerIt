@@ -15,6 +15,13 @@ public abstract class TargetCS extends Target<CommandSender>
 			
 			return new ConsoleTarget();
 		}
+		else if(targetString.equals("-"))
+		{
+			if(!allowConsole)
+				throw new IllegalArgumentException("Null targets are not allowed here.");
+			
+			return new NullTarget();
+		}
 		else if(targetString.startsWith("#"))
 			throw new IllegalArgumentException("Cannot use multiple targets here");
 		else if(targetString.startsWith("!#"))
@@ -41,6 +48,13 @@ public abstract class TargetCS extends Target<CommandSender>
 				throw new IllegalArgumentException("Console targets are not allowed here.");
 			
 			return new ConsoleTarget();
+		}
+		else if(targetString.equals("-"))
+		{
+			if(!allowConsole)
+				throw new IllegalArgumentException("Null targets are not allowed here.");
+			
+			return new NullTarget();
 		}
 		else if(targetString.startsWith("#"))
 			return new PermissionTarget(targetString.substring(1), false);
