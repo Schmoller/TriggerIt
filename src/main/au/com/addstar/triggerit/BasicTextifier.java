@@ -8,6 +8,7 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 public class BasicTextifier implements ITextifier
 {
@@ -33,6 +34,8 @@ public class BasicTextifier implements ITextifier
 		}
 		else if(obj instanceof Entity)
 			return ((LivingEntity) obj).getType().toString();
+		else if(obj instanceof ItemStack)
+			return ((ItemStack) obj).getType().name();
 		else if(obj instanceof Collection)
 		{
 			StringBuilder out = new StringBuilder();

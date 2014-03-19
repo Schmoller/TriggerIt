@@ -18,6 +18,8 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
@@ -184,6 +186,36 @@ public class BasicArgumentProvider implements ArgumentProvider
 			builder.put("name", world.getName())
 				.put("time", world.getTime())
 				.put("difficulty", world.getDifficulty());
+			
+			return builder.build();
+		}
+		else if(value instanceof ItemStack)
+		{
+			ItemStack item = (ItemStack)value;
+			ImmutableMap.Builder<String, Object> builder = ImmutableMap.builder();
+			
+			builder.put("type", item.getType().name())
+				.put("amount", item.getAmount())
+				.put("data", item.getDurability());
+				
+			if(item.hasItemMeta())
+			{
+				ItemMeta meta = item.getItemMeta();
+				
+				if(meta.hasDisplayName())
+					builder.put("name", meta.getDisplayName());
+				
+				if(meta.hasEnchants())
+					builder.put("isEnchanted", "true");
+				else
+					builder.put("isEnchanted", "false");
+			}
+			else
+			{
+				builder.put("isEnchanted", "false");
+			}
+			
+			return builder.build();
 		}
 		return null;
 	}

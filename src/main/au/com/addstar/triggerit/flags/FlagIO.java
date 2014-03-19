@@ -19,6 +19,7 @@ public class FlagIO
 		mKnownTypes.put("Percent", PercentFlag.class);
 		mKnownTypes.put("Integer", IntegerFlag.class);
 		mKnownTypes.put("Time", TimeFlag.class);
+		mKnownTypes.put("PTarget", PlayerTargetFlag.class);
 	}
 	
 	public static void addKnownType(String type, Class<? extends Flag<?>> typeClass)
