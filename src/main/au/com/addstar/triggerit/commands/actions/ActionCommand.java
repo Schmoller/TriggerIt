@@ -17,6 +17,8 @@ public class ActionCommand extends CommandDispatcher implements ICommand
 		super("Allows you to add, remove, and change actions on triggers");
 		registerCommand(new AddActionCommand());
 		registerCommand(new ClearActionsCommand());
+		registerCommand(new RemoveActionCommand());
+		registerCommand(new InsertActionCommand());
 	}
 
 	@Override

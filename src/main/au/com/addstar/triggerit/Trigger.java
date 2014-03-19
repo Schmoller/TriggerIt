@@ -83,6 +83,21 @@ public abstract class Trigger implements Flaggable
 		mActions.clear();
 	}
 	
+	public final List<Action> getActions()
+	{
+		return Collections.unmodifiableList(mActions);
+	}
+	
+	public final void removeAction(int index)
+	{
+		mActions.remove(index);
+	}
+	
+	public final void insertAction(Action action, int index)
+	{
+		mActions.add(index, action);
+	}
+	
 	public Condition getCondition()
 	{
 		return mCondition;
