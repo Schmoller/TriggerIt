@@ -117,7 +117,7 @@ public class TimeTrigger extends Trigger implements WorldSpecific
 			trigger.mWorld = world.getUID();
 		}
 		
-		trigger.mTime.setValue(trigger.mTime.parse(null, args));
+		trigger.mTime.setValue(trigger.mTime.parse(null, new String[] {args[0]}));
 		
 		return trigger;
 	}

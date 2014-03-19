@@ -1,8 +1,8 @@
 package au.com.addstar.triggerit.actions;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
@@ -10,6 +10,7 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import au.com.addstar.triggerit.Action;
 import au.com.addstar.triggerit.BasicArgumentProvider;
 import au.com.addstar.triggerit.BasicTextifier;
+import au.com.addstar.triggerit.CommandUtils;
 import au.com.addstar.triggerit.StringWithPlaceholders;
 import au.com.addstar.triggerit.Utilities;
 import au.com.addstar.triggerit.commands.BadArgumentException;
@@ -25,6 +26,43 @@ public class CommandAction implements Action
 	{
 	}
 	
+	private void runCommand(List<? extends CommandSender> targets, String command)
+	{
+		boolean opOverride = false;
+		if(command.startsWith("*"))
+		{
+			opOverride = true;
+			command = command.substring(1);
+		}
+		
+		Map<String, Boolean> perms = null;
+		while(command.startsWith("["))
+		{
+			String perm;
+			int end = command.indexOf(']');
+			if(end == -1)
+				break;
+			
+			perm = command.substring(1, end);
+			command = command.substring(end+1);
+			
+			boolean invert = false;
+			if(perm.startsWith("-"))
+			{
+				invert = true;
+				perm = perm.substring(1);
+			}
+			
+			if(perms == null)
+				perms = new HashMap<String, Boolean>();
+			
+			perms.put(perm, !invert);
+		}
+		
+		for(CommandSender sender : targets)
+			CommandUtils.dispatchCommand(sender, command, perms, opOverride);
+	}
+	
 	@Override
 	public void execute( Map<String, Object> arguments )
 	{
@@ -36,16 +74,10 @@ public class CommandAction implements Action
 		if(command != null)
 		{
 			for(String commandPost : command)
-			{
-				for(CommandSender sender : mExecutor.getTargets())
-					Bukkit.dispatchCommand(sender, commandPost);
-			}
+				runCommand(mExecutor.getTargets(), commandPost);
 		}
 		else
-		{
-			for(CommandSender sender : mExecutor.getTargets())
-				Bukkit.dispatchCommand(sender, commandPre);
-		}
+			runCommand(mExecutor.getTargets(), commandPre);
 	}
 	
 	@Override
@@ -101,6 +133,8 @@ public class CommandAction implements Action
 				action.mCommand += " ";
 			action.mCommand += args[i];
 		}
+		
+		
 		
 		return action;
 	}
