@@ -8,6 +8,7 @@ import au.com.addstar.triggerit.actions.CommandAction;
 import au.com.addstar.triggerit.actions.MessageAction;
 import au.com.addstar.triggerit.actions.SoundAction;
 import au.com.addstar.triggerit.actions.TeleportAction;
+import au.com.addstar.triggerit.commands.actions.TimeAction;
 import au.com.addstar.triggerit.commands.triggers.TriggerCommand;
 import au.com.addstar.triggerit.minigames.MinigamesExtension;
 import au.com.addstar.triggerit.triggers.*;
@@ -88,6 +89,7 @@ public class TriggerItPlugin extends JavaPlugin
 		mActions.registerActionType("Message", MessageAction.class);
 		mActions.registerActionType("SoundEffect", SoundAction.class);
 		mActions.registerActionType("Teleport", TeleportAction.class);
+		mActions.registerActionType("Time", TimeAction.class);
 	}
 	
 	private void registerCommands()

@@ -19,6 +19,35 @@ public class TimeFlag extends Flag<Integer>
 	@Override
 	public Integer parse( Player sender, String[] args ) throws IllegalArgumentException, BadArgumentException
 	{
+		return parseTime(args);
+	}
+
+	@Override
+	public List<String> tabComplete( Player sender, String[] args )
+	{
+		return null;
+	}
+
+	@Override
+	public void save( ConfigurationSection section )
+	{
+		section.set("value", value);
+	}
+
+	@Override
+	public void read( ConfigurationSection section ) throws InvalidConfigurationException
+	{
+		value = section.getInt("value");
+	}
+
+	@Override
+	public String getValueString()
+	{
+		return timeToString(value);
+	}
+	
+	public static int parseTime(String[] args) throws IllegalArgumentException, BadArgumentException
+	{
 		if(args.length != 1)
 			throw new IllegalArgumentException("<4000ticks|3pm|13:00|4:20am>");
 		
@@ -75,36 +104,17 @@ public class TimeFlag extends Flag<Integer>
 			return ticks;
 		}
 	}
-
-	@Override
-	public List<String> tabComplete( Player sender, String[] args )
+	
+	public static String timeToString(int time)
 	{
-		return null;
-	}
-
-	@Override
-	public void save( ConfigurationSection section )
-	{
-		section.set("value", value);
-	}
-
-	@Override
-	public void read( ConfigurationSection section ) throws InvalidConfigurationException
-	{
-		value = section.getInt("value");
-	}
-
-	@Override
-	public String getValueString()
-	{
-		int ticks = value + 6000;
+		int ticks = time + 6000;
 		if(ticks >= 24000)
 			ticks -= 24000;
 		
 		int hours = ticks / 1000;
 		int minutes = (ticks - (hours * 1000)) * 60 / 1000;
 		
-		return String.format("%2d:%2d", hours, minutes);
+		return String.format("%02d:%02d", hours, minutes);
 	}
 
 }
