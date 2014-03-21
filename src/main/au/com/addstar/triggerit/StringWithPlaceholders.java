@@ -14,13 +14,11 @@ public class StringWithPlaceholders implements Iterable<String>
 {
 	private String mBase;
 	private ArrayList<Placeholder> mPlaceholders;
-	private ITextifier mTextifier;
 	
-	private StringWithPlaceholders(String base, ArrayList<Placeholder> placeholders, ITextifier textifier)
+	private StringWithPlaceholders(String base, ArrayList<Placeholder> placeholders)
 	{
 		mBase = base;
 		mPlaceholders = placeholders;
-		mTextifier = textifier;
 	}
 	
 	@Override
@@ -30,7 +28,7 @@ public class StringWithPlaceholders implements Iterable<String>
 	}
 	
 	private static Pattern mPattern = Pattern.compile("@\\[([a-zA-Z0-9_]+(?:\\.[a-zA-Z0-9_]+)*)\\]");
-	public static StringWithPlaceholders from(String string, Map<String, Object> arguments, ArgumentProvider provider, ITextifier textifier)
+	public static StringWithPlaceholders from(String string, Map<String, Object> arguments)
 	{
 		ArrayList<Placeholder> placeholders = new ArrayList<Placeholder>();
 		HashMap<String, Placeholder> parentPlaceholders = new HashMap<String, Placeholder>();
@@ -51,7 +49,7 @@ public class StringWithPlaceholders implements Iterable<String>
 					
 					for(int i = 1; i < parts.length; ++i)
 					{
-						Map<String, Object> args = provider.provide(sub);
+						Map<String, Object> args = TriggerIt.getArgumentsFor(sub);
 						if(args != null)
 							sub = args.get(parts[i]);
 						else
@@ -77,7 +75,7 @@ public class StringWithPlaceholders implements Iterable<String>
 		if(placeholders.isEmpty())
 			return null;
 		
-		return new StringWithPlaceholders(string, placeholders, textifier);
+		return new StringWithPlaceholders(string, placeholders);
 	}
 	
 	private class PlaceholderIterator implements Iterator<String>
@@ -122,7 +120,7 @@ public class StringWithPlaceholders implements Iterable<String>
 				cmd.append(mBase.substring(lastPos, placeholder.start));
 				lastPos = placeholder.end;
 				
-				cmd.append(mTextifier.asString(placeholder.getCurrent()));
+				cmd.append(TriggerIt.getArgumentString(placeholder.getCurrent()));
 			}
 			
 			cmd.append(mBase.substring(lastPos));

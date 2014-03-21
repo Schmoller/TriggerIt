@@ -11,8 +11,6 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 
 import au.com.addstar.triggerit.Action;
-import au.com.addstar.triggerit.BasicArgumentProvider;
-import au.com.addstar.triggerit.BasicTextifier;
 import au.com.addstar.triggerit.Utilities;
 import au.com.addstar.triggerit.commands.BadArgumentException;
 import au.com.addstar.triggerit.flags.TimeFlag;
@@ -25,7 +23,7 @@ public class TimeAction implements Action
 	@Override
 	public void execute( Map<String, Object> arguments )
 	{
-		String world = Utilities.replaceArguments(mWorld, arguments, BasicArgumentProvider.instance, BasicTextifier.instance);
+		String world = Utilities.replaceArguments(mWorld, arguments);
 		if(world.equals("*"))
 		{
 			for(World w : Bukkit.getWorlds())

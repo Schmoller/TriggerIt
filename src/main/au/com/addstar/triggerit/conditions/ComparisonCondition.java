@@ -2,8 +2,7 @@ package au.com.addstar.triggerit.conditions;
 
 import java.util.Map;
 
-import au.com.addstar.triggerit.BasicArgumentProvider;
-import au.com.addstar.triggerit.BasicTextifier;
+import au.com.addstar.triggerit.TriggerIt;
 import au.com.addstar.triggerit.Utilities;
 
 public class ComparisonCondition extends Condition
@@ -58,8 +57,8 @@ public class ComparisonCondition extends Condition
 	@Override
 	public boolean isTrue( Map<String, Object> arguments )
 	{
-		Object argVal = Utilities.getArgument(mArgument, arguments, BasicArgumentProvider.instance);
-		String argValString = (argVal != null ? BasicTextifier.instance.asString(argVal).toLowerCase() : null);
+		Object argVal = Utilities.getArgument(mArgument, arguments);
+		String argValString = (argVal != null ? TriggerIt.getArgumentString(argVal).toLowerCase() : null);
 		
 		int comparison = 0;
 		

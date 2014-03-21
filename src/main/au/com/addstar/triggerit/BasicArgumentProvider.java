@@ -1,7 +1,6 @@
 package au.com.addstar.triggerit;
 
-import java.util.Map;
-
+import java.util.Collection;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -15,6 +14,7 @@ import org.bukkit.block.NoteBlock;
 import org.bukkit.block.Sign;
 import org.bukkit.block.Skull;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
@@ -24,22 +24,18 @@ import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
 
-public class BasicArgumentProvider implements ArgumentProvider
+public class BasicArgumentProvider implements ArgumentHandler
 {
-	public static final BasicArgumentProvider instance = new BasicArgumentProvider();
-	
 	@SuppressWarnings( "deprecation" )
 	@Override
-	public Map<String, Object> provide( Object value )
+	public void buildArguments( Object value, Builder<String, Object> builder )
 	{
 		if(value instanceof Player)
 		{
 			Player player = (Player)value;
 			Location location = player.getLocation();
-			ImmutableMap.Builder<String, Object> builder = ImmutableMap.builder(); 
-			
 			builder.put("x", location.getX())
 				.put("y", location.getY())
 				.put("z", location.getZ())
@@ -64,14 +60,11 @@ public class BasicArgumentProvider implements ArgumentProvider
 				for(Score score : board.getScores(player))
 					builder.put("score_" + score.getObjective().getName(), score.getScore());
 			}
-			
-			return builder.build();
 		}
 		else if(value instanceof Entity)
 		{
 			Entity entity = (Entity)value;
 			Location location = entity.getLocation();
-			ImmutableMap.Builder<String, Object> builder = ImmutableMap.builder(); 
 			
 			builder.put("x", location.getX())
 				.put("y", location.getY())
@@ -83,14 +76,12 @@ public class BasicArgumentProvider implements ArgumentProvider
 				.put("type", entity.getType())
 				.put("id", entity.getEntityId());
 				
-			return builder.build();
 		}
 		else if(value instanceof Block)
 		{
 			Block block = (Block)value;
 			Location location = block.getLocation();
-			ImmutableMap.Builder<String, Object> builder = ImmutableMap.builder();
-			
+		
 			builder.put("x", location.getX())
 			.put("y", location.getY())
 			.put("z", location.getZ())
@@ -176,23 +167,19 @@ public class BasicArgumentProvider implements ArgumentProvider
 					.put("name", inv.getTitle());
 			}
 			
-			return builder.build();
 		}
 		else if(value instanceof World)
 		{
 			World world = (World)value;
-			ImmutableMap.Builder<String, Object> builder = ImmutableMap.builder();
 			
 			builder.put("name", world.getName())
 				.put("time", world.getTime())
 				.put("difficulty", world.getDifficulty());
 			
-			return builder.build();
 		}
 		else if(value instanceof ItemStack)
 		{
 			ItemStack item = (ItemStack)value;
-			ImmutableMap.Builder<String, Object> builder = ImmutableMap.builder();
 			
 			builder.put("type", item.getType().name())
 				.put("amount", item.getAmount())
@@ -214,9 +201,46 @@ public class BasicArgumentProvider implements ArgumentProvider
 			{
 				builder.put("isEnchanted", "false");
 			}
-			
-			return builder.build();
 		}
+	}
+	
+	@Override
+	public String asString( Object obj )
+	{
+		if(obj instanceof Player)
+			return ((Player)obj).getName();
+		else if(obj instanceof Block)
+			return String.format("%d %d %d", ((Block) obj).getX(), ((Block) obj).getY(), ((Block) obj).getZ());
+		else if(obj instanceof Location)
+			return String.format("%.1f %.1f %.1f", ((Location) obj).getX(), ((Location) obj).getY(), ((Location) obj).getZ());
+		else if(obj instanceof World)
+			return ((World) obj).getName();
+		else if(obj instanceof LivingEntity)
+		{
+			if(((LivingEntity) obj).getCustomName() != null)
+				return ((LivingEntity) obj).getCustomName();
+			return ((LivingEntity) obj).getType().toString();
+		}
+		else if(obj instanceof Entity)
+			return ((LivingEntity) obj).getType().toString();
+		else if(obj instanceof ItemStack)
+			return ((ItemStack) obj).getType().name();
+		else if(obj instanceof Collection)
+		{
+			StringBuilder out = new StringBuilder();
+			
+			boolean first = true;
+			for(Object o2 : (Collection<?>)obj)
+			{
+				if(!first)
+					out.append(",");
+				first = false;
+				out.append(asString(o2));
+			}
+			
+			return out.toString();
+		}
+		
 		return null;
 	}
 
