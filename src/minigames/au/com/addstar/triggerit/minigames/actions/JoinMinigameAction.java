@@ -9,21 +9,22 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Player;
 
+import com.google.common.collect.ImmutableSet;
 import com.pauldavdesign.mineauz.minigames.MinigamePlayer;
 import com.pauldavdesign.mineauz.minigames.Minigames;
 import com.pauldavdesign.mineauz.minigames.gametypes.MinigameType;
 import com.pauldavdesign.mineauz.minigames.minigame.Minigame;
 
 import au.com.addstar.triggerit.Action;
+import au.com.addstar.triggerit.TriggerIt;
 import au.com.addstar.triggerit.Utilities;
 import au.com.addstar.triggerit.commands.BadArgumentException;
 import au.com.addstar.triggerit.targets.Target;
-import au.com.addstar.triggerit.targets.TargetCS;
 
 public class JoinMinigameAction implements Action
 {
 	private String mMinigame;
-	private TargetCS mTarget;
+	private Target<? extends CommandSender> mTarget;
 	
 	@Override
 	public void execute( Map<String, Object> arguments )
@@ -50,14 +51,14 @@ public class JoinMinigameAction implements Action
 	public void save( ConfigurationSection section )
 	{
 		section.set("minigame", mMinigame);
-		mTarget.save(section.createSection("target"));
+		section.set("target", mTarget.toString());
 	}
 
 	@Override
 	public void load( ConfigurationSection section ) throws InvalidConfigurationException
 	{
 		mMinigame = section.getString("minigame");
-		mTarget = (TargetCS)Target.loadTarget(section.getConfigurationSection("target"));
+		mTarget = TriggerIt.parseTargets(section.getString("target"), CommandSender.class, ImmutableSet.of(Player.class));
 	}
 
 	@Override
@@ -86,7 +87,7 @@ public class JoinMinigameAction implements Action
 		
 		try
 		{
-			TargetCS target = TargetCS.parseTargets(args[1], false);
+			Target<? extends CommandSender> target = TriggerIt.parseTargets(args[1], CommandSender.class, ImmutableSet.of(Player.class));
 		
 			JoinMinigameAction action = new JoinMinigameAction();
 			action.mMinigame = minigame.getName();

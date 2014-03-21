@@ -10,15 +10,15 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import au.com.addstar.triggerit.Action;
 import au.com.addstar.triggerit.CommandUtils;
 import au.com.addstar.triggerit.StringWithPlaceholders;
+import au.com.addstar.triggerit.TriggerIt;
 import au.com.addstar.triggerit.Utilities;
 import au.com.addstar.triggerit.commands.BadArgumentException;
 import au.com.addstar.triggerit.targets.Target;
-import au.com.addstar.triggerit.targets.TargetCS;
 
 public class CommandAction implements Action
 {
 	private String mCommand;
-	private TargetCS mExecutor;
+	private Target<? extends CommandSender> mExecutor;
 	
 	public CommandAction()
 	{
@@ -82,15 +82,14 @@ public class CommandAction implements Action
 	public void load( ConfigurationSection section ) throws InvalidConfigurationException
 	{
 		mCommand = section.getString("command");
-		mExecutor = (TargetCS)Target.loadTarget(section.getConfigurationSection("target"));
+		mExecutor = TriggerIt.parseTargets(section.getString("target"), CommandSender.class);
 	}
 	
 	@Override
 	public void save( ConfigurationSection section )
 	{
 		section.set("command", mCommand);
-		ConfigurationSection target = section.createSection("target");
-		mExecutor.save(target);
+		section.set("target", mExecutor.toString());
 	}
 	
 	@Override
@@ -117,7 +116,7 @@ public class CommandAction implements Action
 		CommandAction action = new CommandAction();
 		try
 		{
-			action.mExecutor = TargetCS.parseTargets(args[0], true);
+			action.mExecutor = TriggerIt.parseTargets(args[0], CommandSender.class);
 		}
 		catch(IllegalArgumentException e)
 		{

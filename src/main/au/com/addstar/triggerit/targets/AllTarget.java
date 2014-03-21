@@ -2,54 +2,49 @@ package au.com.addstar.triggerit.targets;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Player;
 
-public class AllTarget extends TargetCS
+public class AllTarget extends Target<CommandSender>
 {
-	private boolean mConsole;
-	
-	public AllTarget(boolean console)
+	public AllTarget(Set<? extends Class<? extends CommandSender>> specifics)
 	{
-		mConsole = console;
+		super(specifics);
 	}
-	
-	protected AllTarget() {}
 	
 	@Override
 	public List<? extends CommandSender> getTargets()
 	{
-		Player[] players = Bukkit.getOnlinePlayers();
-		ArrayList<CommandSender> senders = new ArrayList<CommandSender>(players.length + (mConsole ? 1 : 0));
-		for(Player player : players)
-			senders.add(player);
+		boolean allowConsole = isValueAllowed(Bukkit.getConsoleSender());
+		boolean allowPlayers = isTypeAllowed(Player.class);
 		
-		if(mConsole)
+		Player[] players = Bukkit.getOnlinePlayers();
+		ArrayList<CommandSender> senders = new ArrayList<CommandSender>((allowPlayers ? players.length : 0) + (allowConsole ? 1 : 0));
+		
+		if(allowPlayers)
+		{
+			for(Player player : players)
+				senders.add(player);
+		}
+		
+		if(allowConsole)
 			senders.add(Bukkit.getConsoleSender());
 		
 		return senders;
 	}
 
 	@Override
-	protected void load( ConfigurationSection section ) throws InvalidConfigurationException
-	{
-		mConsole = section.getBoolean("console");
-	}
-	
-	@Override
-	public void save( ConfigurationSection section )
-	{
-		super.save(section);
-		section.set("console", mConsole);
-	}
-	
-	@Override
 	public String describe()
 	{
 		return "Everybody";
+	}
+	
+	@Override
+	public String toString()
+	{
+		return "*";
 	}
 }

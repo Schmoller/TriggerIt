@@ -10,21 +10,22 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Player;
 
+import com.google.common.collect.ImmutableSet;
 import com.pauldavdesign.mineauz.minigames.MinigamePlayer;
 import com.pauldavdesign.mineauz.minigames.Minigames;
 import com.pauldavdesign.mineauz.minigames.gametypes.MinigameType;
 import com.pauldavdesign.mineauz.minigames.minigame.Minigame;
 
 import au.com.addstar.triggerit.Action;
+import au.com.addstar.triggerit.TriggerIt;
 import au.com.addstar.triggerit.Utilities;
 import au.com.addstar.triggerit.commands.BadArgumentException;
 import au.com.addstar.triggerit.targets.Target;
-import au.com.addstar.triggerit.targets.TargetCS;
 
 public class EndMinigameAction implements Action
 {
 	private String mMinigame;
-	private TargetCS mWinners;
+	private Target<? extends CommandSender> mWinners;
 	
 	@Override
 	public void execute( Map<String, Object> arguments )
@@ -65,14 +66,14 @@ public class EndMinigameAction implements Action
 	public void save( ConfigurationSection section )
 	{
 		section.set("minigame", mMinigame);
-		mWinners.save(section.createSection("winners"));
+		section.set("winners", mWinners.toString());
 	}
 
 	@Override
 	public void load( ConfigurationSection section ) throws InvalidConfigurationException
 	{
 		mMinigame = section.getString("minigame");
-		mWinners = (TargetCS)Target.loadTarget(section.getConfigurationSection("winners"));
+		mWinners = TriggerIt.parseTargets(section.getString("winners"), CommandSender.class, ImmutableSet.of(Player.class));
 	}
 
 	@Override
@@ -101,7 +102,7 @@ public class EndMinigameAction implements Action
 		
 		try
 		{
-			TargetCS winners = TargetCS.parseTargets(args[1], false);
+			Target<? extends CommandSender> winners = TriggerIt.parseTargets(args[1], CommandSender.class, ImmutableSet.of(Player.class));
 		
 			EndMinigameAction action = new EndMinigameAction();
 			action.mMinigame = minigame.getName();

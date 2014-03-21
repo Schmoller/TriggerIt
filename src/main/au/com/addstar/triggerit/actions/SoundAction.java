@@ -13,7 +13,10 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Player;
 
+import com.google.common.collect.ImmutableSet;
+
 import au.com.addstar.triggerit.Action;
+import au.com.addstar.triggerit.TriggerIt;
 import au.com.addstar.triggerit.Utilities;
 import au.com.addstar.triggerit.commands.BadArgumentException;
 import au.com.addstar.triggerit.targets.ParametricTarget;
@@ -60,15 +63,14 @@ public class SoundAction implements Action
 	public void load( ConfigurationSection section ) throws InvalidConfigurationException
 	{
 		mSound = Sound.valueOf(section.getString("sound"));
-		mTarget = Target.loadTarget(section.getConfigurationSection("target"));
+		mTarget = TriggerIt.parseTargets(section.getString("target"), Object.class, ImmutableSet.of(Player.class, Location.class));
 	}
 	
 	@Override
 	public void save( ConfigurationSection section )
 	{
 		section.set("sound", mSound.name());
-		ConfigurationSection target = section.createSection("target");
-		mTarget.save(target);
+		section.set("target", mTarget.toString());
 	}
 	
 	@Override
@@ -95,7 +97,7 @@ public class SoundAction implements Action
 		SoundAction action = new SoundAction();
 		try
 		{
-			action.mTarget = Target.parseTargets(args[0], false);
+			action.mTarget = TriggerIt.parseTargets(args[0], Object.class, ImmutableSet.of(Player.class, Location.class));
 		}
 		catch(IllegalArgumentException e)
 		{

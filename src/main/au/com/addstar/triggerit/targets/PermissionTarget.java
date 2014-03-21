@@ -6,23 +6,20 @@ import java.util.Set;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permissible;
 
-public class PermissionTarget extends TargetCS
+public class PermissionTarget extends Target<CommandSender>
 {
 	private String mPermission;
 	private boolean mInvert;
 	
-	public PermissionTarget(String perm, boolean invert)
+	public PermissionTarget(String perm, boolean invert, Set<? extends Class<? extends CommandSender>> specifics)
 	{
+		super(specifics);
 		mPermission = perm;
 		mInvert = invert;
 	}
-	
-	protected PermissionTarget() {}
 	
 	@Override
 	public List<? extends CommandSender> getTargets()
@@ -34,7 +31,7 @@ public class PermissionTarget extends TargetCS
 			
 			for(Permissible sub : subs)
 			{
-				if(sub instanceof CommandSender)
+				if(sub instanceof CommandSender && isValueAllowed((CommandSender)sub))
 					senders.add((CommandSender)sub);
 			}
 			
@@ -46,7 +43,7 @@ public class PermissionTarget extends TargetCS
 			ArrayList<CommandSender> senders = new ArrayList<CommandSender>(players.length);
 			for(Player player : players)
 			{
-				if(!player.hasPermission(mPermission))
+				if(!player.hasPermission(mPermission) && isValueAllowed(player))
 					senders.add(player);
 			}
 			
@@ -55,26 +52,20 @@ public class PermissionTarget extends TargetCS
 	}
 
 	@Override
-	protected void load( ConfigurationSection section ) throws InvalidConfigurationException
-	{
-		mPermission = section.getString("perm");
-		mInvert = section.getBoolean("invert");
-	}
-	
-	@Override
-	public void save( ConfigurationSection section )
-	{
-		super.save(section);
-		section.set("perm", mPermission);
-		section.set("invert", mInvert);
-	}
-	
-	@Override
 	public String describe()
 	{
 		if(mInvert)
 			return "Players without permisison '" + mPermission + "'";
 		else
 			return "Players with permisison '" + mPermission + "'";
+	}
+	
+	@Override
+	public String toString()
+	{
+		if(mInvert)
+			return "!#" + mPermission;
+		else
+			return "#" + mPermission;
 	}
 }

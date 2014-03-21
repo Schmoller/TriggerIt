@@ -6,23 +6,22 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang.Validate;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.InvalidConfigurationException;
 
-public class CSParametricTarget extends TargetCS
+public class CSParametricTarget extends Target<CommandSender>
 {
 	private String mArgument;
 	private Map<String, Object> mArguments;
 	
-	public CSParametricTarget(String argument)
+	public CSParametricTarget(String argument, Set<? extends Class<? extends CommandSender>> specifics)
 	{
+		super(specifics);
+		
 		mArgument = argument;
 	}
-	
-	protected CSParametricTarget() {}
 	
 	@Override
 	public void setArgumentMap(Map<String, Object> arguments)
@@ -39,7 +38,7 @@ public class CSParametricTarget extends TargetCS
 		
 		Object argument = mArguments.get(mArgument);
 		
-		if(argument instanceof CommandSender)
+		if(argument instanceof CommandSender && isValueAllowed((CommandSender)argument))
 			return Arrays.asList((CommandSender)argument);
 		else if(argument instanceof Collection<?>)
 		{
@@ -47,30 +46,23 @@ public class CSParametricTarget extends TargetCS
 			if(!col.isEmpty())
 			{
 				Object ent1 = col.iterator().next();
-				if(ent1 instanceof CommandSender)
+				if(ent1 instanceof CommandSender && isValueAllowed((CommandSender)ent1))
 					return new ArrayList<CommandSender>((Collection<? extends CommandSender>)col);
 			}
 		}
 		
 		return Collections.emptyList();
 	}
-
-	@Override
-	protected void load( ConfigurationSection section ) throws InvalidConfigurationException
-	{
-		mArgument = section.getString("argument");
-	}
-	
-	@Override
-	public void save( ConfigurationSection section )
-	{
-		super.save(section);
-		section.set("argument", mArgument);
-	}
 	
 	@Override
 	public String describe()
 	{
 		return "Player resolved from argument '" + mArgument + "'";
+	}
+	
+	@Override
+	public String toString()
+	{
+		return "@" + mArgument;
 	}
 }

@@ -243,6 +243,12 @@ public class RelativeLocation extends Location implements ConfigurationSerializa
 			throw new BadArgumentException(offset, "Z value expected");
 		}
 		
+		++offset;
+		if(args.length - offset >= 1)
+		{
+			loc.setWorld(Bukkit.getWorld(args[offset]));
+		}
+		
 		return loc;
 	}
 	
@@ -328,6 +334,12 @@ public class RelativeLocation extends Location implements ConfigurationSerializa
 		catch(NumberFormatException e)
 		{
 			throw new BadArgumentException(offset, "Pitch value expected");
+		}
+		
+		++offset;
+		if(args.length - offset >= 1)
+		{
+			loc.setWorld(Bukkit.getWorld(args[offset]));
 		}
 		
 		return loc;

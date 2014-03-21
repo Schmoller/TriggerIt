@@ -3,24 +3,23 @@ package au.com.addstar.triggerit.targets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang.Validate;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.InvalidConfigurationException;
 
 public class ParametricTarget extends Target<Object>
 {
 	private String mArgument;
 	private Map<String, Object> mArguments;
 	
-	public ParametricTarget(String argument)
+	public ParametricTarget(String argument, Set<Class<? extends Object>> specifics)
 	{
+		super(specifics);
 		mArgument = argument;
 	}
-	
-	protected ParametricTarget() {}
 	
 	@Override
 	public void setArgumentMap(Map<String, Object> arguments)
@@ -37,27 +36,31 @@ public class ParametricTarget extends Target<Object>
 		Object obj = mArguments.get(mArgument);
 		
 		if(obj instanceof Collection<?>)
-			return new ArrayList<Object>((Collection<?>)obj);
-		
-		return Arrays.asList(obj);
+		{
+			ArrayList<Object> result = new ArrayList<Object>(((Collection<?>)obj).size());
+			for(Object o : (Collection<?>)obj)
+			{
+				if(isValueAllowed(o))
+					result.add(o);
+			}
+			
+			return result;
+		}
+		else if(isValueAllowed(obj))
+			return Arrays.asList(obj);
+		else
+			return Collections.emptyList();
 	}
 	
-	@Override
-	protected void load( ConfigurationSection section ) throws InvalidConfigurationException
-	{
-		mArgument = section.getString("argument");
-	}
-	
-	@Override
-	public void save( ConfigurationSection section )
-	{
-		super.save(section);
-		section.set("argument", mArgument);
-	}
-
 	@Override
 	public String describe()
 	{
 		return "Value of argument '" + mArgument + "'";
+	}
+	
+	@Override
+	public String toString()
+	{
+		return "@" + mArgument;
 	}
 }

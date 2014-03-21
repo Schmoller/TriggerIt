@@ -1,76 +1,66 @@
 package au.com.addstar.triggerit.targets;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
-
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.InvalidConfigurationException;
+import java.util.Set;
 
 public abstract class Target<T>
 {
+	protected Set<? extends Class<? extends T>> specifics;
+	
+	public Target(Set<? extends Class<? extends T>> specifics)
+	{
+		this.specifics = specifics;
+	}
+	
+	/**
+	 * Checks if a value is allowed by the specifics set.
+	 * To be allowed one of the following conditions must be met:
+	 * The specifics set is empty,
+	 * The values class is in the specifics set,
+	 * The values class is a sub class of one in the specifics set
+	 */
+	protected boolean isValueAllowed(T value)
+	{
+		if(value == null)
+			return false;
+		
+		if(specifics.isEmpty())
+			return true;
+		
+		for(Class<? extends Object> clazz : specifics)
+		{
+			if(clazz.isInstance(value))
+				return true;
+		}
+		
+		return false;
+	}
+	
+	protected boolean isTypeAllowed(Class<? extends T> value)
+	{
+		return isTypeAllowed(value, specifics);
+	}
+	
+	public static <T> boolean isTypeAllowed(Class<? extends T> value, Set<? extends Class<? extends Object>> specifics)
+	{
+		if(specifics.isEmpty())
+			return true;
+		
+		for(Class<? extends Object> clazz : specifics)
+		{
+			if(clazz.isAssignableFrom(value))
+				return true;
+		}
+		
+		return false;
+	}
+	
 	public abstract List<? extends T> getTargets();
 	
 	public void setArgumentMap(Map<String, Object> arguments) {}
 	
-	public void save(ConfigurationSection section)
-	{
-		section.set("~~", getClass().getName());
-	}
-	
-	protected abstract void load(ConfigurationSection section) throws InvalidConfigurationException;
-	
 	public abstract String describe();
 	
-	public static Target<? extends Object> parseSingleTarget(String targetString, boolean allowConsole) throws IllegalArgumentException
-	{
-		if(targetString.startsWith("@"))
-			return new ParametricTarget(targetString.substring(1));
-		else
-			return TargetCS.parseSingleTarget(targetString, allowConsole);
-	}
-	
-	public static Target<? extends Object> parseTargets(String targetString, boolean allowConsole) throws IllegalArgumentException
-	{
-		if(targetString.startsWith("@"))
-			return new ParametricTarget(targetString.substring(1));
-		else
-			return TargetCS.parseTargets(targetString, allowConsole);
-	}
-	
-	public static Target<? extends Object> loadTarget(ConfigurationSection section) throws InvalidConfigurationException
-	{
-		try
-		{
-			String className = section.getString("~~");
-			@SuppressWarnings( "unchecked" )
-			Class<? extends Target<? extends Object>> clazz = (Class<? extends Target<? extends Object>>)Class.forName(className).asSubclass(Target.class);
-			
-			Constructor<? extends Target<? extends Object>> constructor = clazz.getDeclaredConstructor();
-			constructor.setAccessible(true);
-			
-			Target<? extends Object> target = constructor.newInstance();
-			
-			target.load(section);
-			
-			return target;
-		}
-		catch(ClassNotFoundException e)
-		{
-			throw new InvalidConfigurationException("Could not find required Target type: " + e.getMessage());
-		}
-		catch(NoSuchMethodException e)
-		{
-			throw new InvalidConfigurationException("Target type does not provide a default constructor. Cannot load it");
-		}
-		catch ( InvocationTargetException e )
-		{
-			throw new InvalidConfigurationException("An error occured loading target type " + section.getString("~~"), e.getCause());
-		}
-		catch (Exception e)
-		{
-			throw new InvalidConfigurationException("An error occured loading target type " + section.getString("~~"), e);
-		}
-	}
+	public abstract String toString();
 }

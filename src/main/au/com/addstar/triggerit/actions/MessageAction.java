@@ -9,15 +9,15 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import au.com.addstar.triggerit.Action;
 import au.com.addstar.triggerit.StringWithPlaceholders;
+import au.com.addstar.triggerit.TriggerIt;
 import au.com.addstar.triggerit.Utilities;
 import au.com.addstar.triggerit.commands.BadArgumentException;
 import au.com.addstar.triggerit.targets.Target;
-import au.com.addstar.triggerit.targets.TargetCS;
 
 public class MessageAction implements Action
 {
 	private String mMessage;
-	private TargetCS mTarget;
+	private Target<? extends CommandSender> mTarget;
 	
 	@Override
 	public void execute( Map<String, Object> arguments )
@@ -45,15 +45,14 @@ public class MessageAction implements Action
 	public void load( ConfigurationSection section ) throws InvalidConfigurationException
 	{
 		mMessage = section.getString("message");
-		mTarget = (TargetCS)Target.loadTarget(section.getConfigurationSection("target"));
+		mTarget = TriggerIt.parseTargets(section.getString("target"), CommandSender.class);
 	}
 	
 	@Override
 	public void save( ConfigurationSection section )
 	{
 		section.set("message", mMessage);
-		ConfigurationSection target = section.createSection("target");
-		mTarget.save(target);
+		section.set("target", mTarget.toString());
 	}
 	
 	@Override
@@ -80,7 +79,7 @@ public class MessageAction implements Action
 		MessageAction action = new MessageAction();
 		try
 		{
-			action.mTarget = TargetCS.parseTargets(args[0], true);
+			action.mTarget = TriggerIt.parseTargets(args[0], CommandSender.class);
 		}
 		catch(IllegalArgumentException e)
 		{

@@ -3,23 +3,20 @@ package au.com.addstar.triggerit.targets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
-import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.InvalidConfigurationException;
 
-public class PlayerTarget extends TargetCS
+public class PlayerTarget extends Target<CommandSender>
 {
 	private OfflinePlayer mTarget;
 	
-	public PlayerTarget(OfflinePlayer player)
+	public PlayerTarget(OfflinePlayer player, Set<? extends Class<? extends CommandSender>> specifics)
 	{
+		super(specifics);
 		mTarget = player;
 	}
-	
-	protected PlayerTarget() {}
 	
 	@Override
 	public List<? extends CommandSender> getTargets()
@@ -31,22 +28,14 @@ public class PlayerTarget extends TargetCS
 	}
 	
 	@Override
-	public void save( ConfigurationSection section )
-	{
-		super.save(section);
-		section.set("player", mTarget.getName());
-	}
-	
-	@Override
-	protected void load( ConfigurationSection section ) throws InvalidConfigurationException
-	{
-		mTarget = Bukkit.getOfflinePlayer(section.getString("player"));
-	}
-	
-	@Override
 	public String describe()
 	{
 		return "Player: " + mTarget.getName();
 	}
 
+	@Override
+	public String toString()
+	{
+		return mTarget.getName();
+	}
 }

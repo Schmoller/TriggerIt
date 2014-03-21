@@ -41,6 +41,11 @@ public class TriggerItPlugin extends JavaPlugin
 		mTriggers = new TriggerManager();
 		mActions = new ActionManager();
 		
+		TriggerIt.initialize(this);
+		TriggerIt.registerArgumentProvider(new BasicArgumentProvider());
+		TriggerIt.registerTargetParser(new BasicTargetParser());
+		TriggerIt.registerTargetParser(new CommandSenderTargetParser());
+		
 		registerTriggers();
 		registerActions();
 		registerCommands();

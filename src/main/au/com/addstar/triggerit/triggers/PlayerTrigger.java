@@ -1,8 +1,10 @@
 package au.com.addstar.triggerit.triggers;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -29,8 +31,10 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 import au.com.addstar.triggerit.Trigger;
+import au.com.addstar.triggerit.TriggerIt;
 import au.com.addstar.triggerit.TriggerItPlugin;
 import au.com.addstar.triggerit.Utilities;
 import au.com.addstar.triggerit.commands.BadArgumentException;
@@ -39,7 +43,7 @@ import au.com.addstar.triggerit.flags.FlagIO;
 import au.com.addstar.triggerit.flags.PlayerTargetFlag;
 import au.com.addstar.triggerit.targets.AllTarget;
 import au.com.addstar.triggerit.targets.CSParametricTarget;
-import au.com.addstar.triggerit.targets.TargetCS;
+import au.com.addstar.triggerit.targets.Target;
 
 public class PlayerTrigger extends Trigger
 {
@@ -146,13 +150,13 @@ public class PlayerTrigger extends Trigger
 		if(type == null)
 			throw new BadArgumentException(0, "Unknown player trigger type");
 		
-		TargetCS target = null;
+		Target<? extends CommandSender> target = null;
 		
 		if(args.length == 2)
 		{
 			try
 			{
-				target = TargetCS.parseTargets(args[1], false);
+				target = TriggerIt.parseTargets(args[1], CommandSender.class, ImmutableSet.of(Player.class));
 			}
 			catch(IllegalArgumentException e)
 			{
@@ -163,7 +167,10 @@ public class PlayerTrigger extends Trigger
 				throw new BadArgumentException(1, "Cannot use argument based targets here");
 		}
 		else
-			target = new AllTarget(false);
+		{
+			Set<? extends Class<? extends CommandSender>> set = Collections.emptySet(); 
+			target = new AllTarget(set);
+		}
 		
 		PlayerTrigger trigger = new PlayerTrigger(name);
 		trigger.mTarget.setValue(target);
@@ -209,7 +216,7 @@ public class PlayerTrigger extends Trigger
 				if(!ok)
 					continue;
 				
-				TargetCS target = trigger.mTarget.getValue();
+				Target<? extends CommandSender> target = trigger.mTarget.getValue();
 				
 				if(!(target instanceof AllTarget))
 				{

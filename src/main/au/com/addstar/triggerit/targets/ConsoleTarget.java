@@ -2,14 +2,18 @@ package au.com.addstar.triggerit.targets;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.InvalidConfigurationException;
 
-public class ConsoleTarget extends TargetCS
+public class ConsoleTarget extends Target<CommandSender>
 {
+	public ConsoleTarget(Set<? extends Class<? extends CommandSender>> specifics)
+	{
+		super(specifics);
+	}
+	
 	@Override
 	public List<? extends CommandSender> getTargets()
 	{
@@ -17,19 +21,14 @@ public class ConsoleTarget extends TargetCS
 	}
 	
 	@Override
-	protected void load( ConfigurationSection section ) throws InvalidConfigurationException
-	{
-	}
-	
-	@Override
-	public void save( ConfigurationSection section )
-	{
-		super.save(section);
-	}
-
-	@Override
 	public String describe()
 	{
 		return "Console";
+	}
+	
+	@Override
+	public String toString()
+	{
+		return "~";
 	}
 }

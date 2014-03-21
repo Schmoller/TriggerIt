@@ -1,7 +1,9 @@
 package au.com.addstar.triggerit.actions;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -10,16 +12,19 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
+
+import com.google.common.collect.ImmutableSet;
+
 import au.com.addstar.triggerit.Action;
 import au.com.addstar.triggerit.RelativeLocation;
+import au.com.addstar.triggerit.TriggerIt;
 import au.com.addstar.triggerit.commands.BadArgumentException;
 import au.com.addstar.triggerit.targets.LocationTarget;
 import au.com.addstar.triggerit.targets.Target;
-import au.com.addstar.triggerit.targets.TargetCS;
 
 public class TeleportAction implements Action
 {
-	private TargetCS mTarget;
+	private Target<? extends CommandSender> mTarget;
 	private Target<? extends Object> mDestination;
 	
 	@Override
@@ -52,17 +57,15 @@ public class TeleportAction implements Action
 	@Override
 	public void load( ConfigurationSection section ) throws InvalidConfigurationException
 	{
-		mTarget = (TargetCS)Target.loadTarget(section.getConfigurationSection("target"));
-		mDestination = Target.loadTarget(section.getConfigurationSection("dest"));
+		mTarget = TriggerIt.parseTargets(section.getString("target"), CommandSender.class, ImmutableSet.of(Player.class));
+		mDestination = TriggerIt.parseSingleTarget(section.getString("dest"), Object.class, ImmutableSet.of(Player.class, Location.class));
 	}
 	
 	@Override
 	public void save( ConfigurationSection section )
 	{
-		ConfigurationSection target = section.createSection("target");
-		mTarget.save(target);
-		ConfigurationSection destination = section.createSection("dest");
-		mDestination.save(destination);
+		section.set("target", mTarget.toString());
+		section.set("dest", mDestination.toString());
 	}
 	
 	@Override
@@ -86,11 +89,11 @@ public class TeleportAction implements Action
 		if(args.length == 0)
 			throw new IllegalStateException("<target> <destination>");
 		
-		TargetCS target;
+		Target<? extends CommandSender> target;
 		
 		try
 		{
-			target = TargetCS.parseTargets(args[0], false);
+			target = TriggerIt.parseTargets(args[0], CommandSender.class, ImmutableSet.of(Player.class));
 		}
 		catch(IllegalArgumentException e)
 		{
@@ -111,7 +114,7 @@ public class TeleportAction implements Action
 		{
 			try
 			{
-				destination = Target.parseSingleTarget(args[1], false);
+				destination = TriggerIt.parseSingleTarget(args[1], Object.class, ImmutableSet.of(Player.class, Location.class));
 			}
 			catch(IllegalArgumentException e)
 			{
@@ -127,12 +130,14 @@ public class TeleportAction implements Action
 		else if(args.length == 4)
 		{
 			RelativeLocation loc = RelativeLocation.parseLocation(args, 1);
-			destination = new LocationTarget(loc);
+			Set<? extends Class<? extends RelativeLocation>> specifics = Collections.emptySet();
+			destination = new LocationTarget(loc, specifics);
 		}
 		else if(args.length == 6)
 		{
+			Set<? extends Class<? extends RelativeLocation>> specifics = Collections.emptySet();
 			RelativeLocation loc = RelativeLocation.parseLocationFull(args, 1);
-			destination = new LocationTarget(loc);
+			destination = new LocationTarget(loc, specifics);
 		}
 		else
 			throw new IllegalStateException("<target> <destination>");

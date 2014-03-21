@@ -2,25 +2,28 @@ package au.com.addstar.triggerit.flags;
 
 import java.util.List;
 
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Player;
 
+import com.google.common.collect.ImmutableSet;
+
+import au.com.addstar.triggerit.TriggerIt;
 import au.com.addstar.triggerit.commands.BadArgumentException;
 import au.com.addstar.triggerit.targets.Target;
-import au.com.addstar.triggerit.targets.TargetCS;
 
-public class PlayerTargetFlag extends Flag<TargetCS>
+public class PlayerTargetFlag extends Flag<Target<? extends CommandSender>>
 {
 	@Override
-	public TargetCS parse( Player sender, String[] args ) throws IllegalArgumentException, BadArgumentException
+	public Target<? extends CommandSender> parse( Player sender, String[] args ) throws IllegalArgumentException, BadArgumentException
 	{
 		if(args.length != 1)
 			throw new IllegalArgumentException("<target>");
 		
 		try
 		{
-			return TargetCS.parseTargets(args[0], false);
+			return TriggerIt.parseTargets(args[0], CommandSender.class, ImmutableSet.of(Player.class));
 		}
 		catch(IllegalArgumentException e)
 		{
@@ -37,13 +40,13 @@ public class PlayerTargetFlag extends Flag<TargetCS>
 	@Override
 	public void save( ConfigurationSection section )
 	{
-		value.save(section);
+		section.set("value", value.toString());
 	}
 
 	@Override
 	public void read( ConfigurationSection section ) throws InvalidConfigurationException
 	{
-		value = (TargetCS)Target.loadTarget(section);
+		value = TriggerIt.parseTargets(section.getString("value"), CommandSender.class, ImmutableSet.of(Player.class));
 	}
 
 	@Override
